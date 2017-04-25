@@ -1,7 +1,7 @@
 FROM alpine:3.5
 
 LABEL maintainer "Lukas Prettenthaler <lukas@noenv.com>"
-LABEL version "1.2.2"
+LABEL version "1.2.4"
 LABEL description "Containerized ZeroTier One for use on CoreOS or other Docker-only Linux hosts."
 
 RUN apk add --no-cache --update libgcc libstdc++
