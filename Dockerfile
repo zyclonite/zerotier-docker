@@ -1,17 +1,24 @@
-FROM alpine:3.5
+FROM debian:buster-slim
 
-LABEL maintainer "Lukas Prettenthaler <lukas@noenv.com>"
-LABEL version "1.2.4"
-LABEL description "Containerized ZeroTier One for use on CoreOS or other Docker-only Linux hosts."
+# zerotier-one version
+ARG ZT_VERSION=1.4.6
 
-RUN apk add --no-cache --update libgcc libstdc++
+LABEL maintainer="Lukas Prettenthaler (zyclonite)"
+LABEL version="$ZT_VERSION"
+LABEL description="Containerized ZeroTier One for use on CoreOS or other Docker-only Linux hosts."
 
-COPY dist/usr/sbin/zerotier-one /zerotier-one
+# Configure environment
+ENV ZT_VERSION=${ZT_VERSION}
 
-RUN chmod 0755 /zerotier-one && ln -sf /zerotier-one /zerotier-cli && ln -sf /zerotier-one /zerotier-idtool && mkdir -p /var/lib/zerotier-one
+RUN apt-get update \
+ && apt-get install -y gnupg2 \
+ && apt-key adv --fetch-keys http://download.zerotier.com/contact%40zerotier.com.gpg \
+ && echo "deb http://download.zerotier.com/debian/buster buster main" > /etc/apt/sources.list.d/zerotier.list \
+ && apt-get update \
+ && apt-get install -y zerotier-one=${ZT_VERSION} \
+ && rm -rf /var/lib/apt/lists/*
 
-COPY main.sh /main.sh
+VOLUME /var/lib/zerotier-one
+EXPOSE 9993
 
-RUN chmod 0755 /main.sh
-
-ENTRYPOINT ["/bin/sh", "-c", "/main.sh"]
+ENTRYPOINT ["zerotier-one"]
