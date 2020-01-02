@@ -1,3 +1,5 @@
+[![Docker Pulls](https://img.shields.io/docker/pulls/zyclonite/zerotier)](https://hub.docker.com/r/zyclonite/zerotier)
+
 ## zerotier-docker
 
 #### Description
