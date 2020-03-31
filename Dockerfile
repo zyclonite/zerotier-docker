@@ -11,7 +11,7 @@ FROM alpine:3.11
 LABEL version="1.4.6"
 LABEL description="ZeroTier One Docker-only Linux hosts"
 
-RUN apk add --update libgcc libc6-compat libstdc++
+RUN apk add --update --no-cache libc6-compat libstdc++
 
 EXPOSE 9993/udp
 
