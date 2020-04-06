@@ -1,4 +1,4 @@
-[![Docker Pulls](https://img.shields.io/docker/pulls/zyclonite/zerotier)](https://hub.docker.com/r/zyclonite/zerotier)
+[![Docker Pulls](https://badgen.net/docker/pulls/zyclonite/zerotier)](https://hub.docker.com/r/zyclonite/zerotier)
 
 ## zerotier-docker
 
