@@ -1,4 +1,4 @@
-FROM alpine:3.11 as builder
+FROM alpine:3.12 as builder
 
 ARG ZT_VERSION=1.4.6
 
@@ -7,7 +7,7 @@ RUN apk add --update alpine-sdk linux-headers \
   && cd /src \
   && make -f make-linux.mk
 
-FROM alpine:3.11
+FROM alpine:3.12
 LABEL version="1.4.6"
 LABEL description="ZeroTier One Docker-only Linux hosts"
 
