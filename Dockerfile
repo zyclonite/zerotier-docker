@@ -3,8 +3,8 @@ FROM alpine:3.12 as builder
 ARG ZT_COMMIT=167645ba6da857dc11ac430b716a5fff8711a6c9
 
 RUN apk add --update alpine-sdk linux-headers \
-  && git clone https://github.com/zerotier/ZeroTierOne.git /src \
-  && git -C src reset --hard ${ZT_COMMIT} \
+  && git clone --quiet https://github.com/zerotier/ZeroTierOne.git /src \
+  && git -C src reset --quiet --hard ${ZT_COMMIT} \
   && cd /src \
   && make -f make-linux.mk
 
