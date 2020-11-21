@@ -1,6 +1,6 @@
 FROM alpine:3.12 as builder
 
-ARG ZT_VERSION=1.5.0
+ARG ZT_VERSION=1.6.0
 
 RUN apk add --update alpine-sdk linux-headers \
   && git clone --depth 1 --branch ${ZT_VERSION} https://github.com/zerotier/ZeroTierOne.git /src \
@@ -8,7 +8,7 @@ RUN apk add --update alpine-sdk linux-headers \
   && make -f make-linux.mk
 
 FROM alpine:3.12
-LABEL version="1.5.0"
+LABEL version="1.6.0"
 LABEL description="ZeroTier One Docker-only Linux hosts"
 
 RUN apk add --update --no-cache libc6-compat libstdc++
