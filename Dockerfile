@@ -1,4 +1,4 @@
-FROM alpine:3.12 as builder
+FROM alpine:3.13 as builder
 
 ARG ZT_COMMIT=e4404164bd9eb14c91906ec3cf577ba98eb24b8a
 
@@ -8,7 +8,7 @@ RUN apk add --update alpine-sdk linux-headers \
   && cd /src \
   && make -f make-linux.mk
 
-FROM alpine:3.12
+FROM alpine:3.13
 LABEL version="1.6.2"
 LABEL description="ZeroTier One as Docker Image"
 
