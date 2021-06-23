@@ -23,7 +23,7 @@ It also mounts /var/lib/zerotier-one to /var/lib/zerotier-one inside the contain
 
 To join a zerotier network you can use
 
-    docker exec zerotier-one /zerotier-cli join 8056c2e21c000001
+    docker exec zerotier-one zerotier-cli join 8056c2e21c000001
 
 
 or create an empty file with the network as name
