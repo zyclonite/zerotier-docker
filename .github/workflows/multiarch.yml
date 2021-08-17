@@ -1,0 +1,129 @@
+name: Multiarch build
+on:
+  push:
+  pull_request:
+
+env:
+  IMAGE_NAME: zerotier
+  IMAGE_TAG: main
+  ALPINE_VERSION: "3.14"
+  ZT_COMMIT: e8f7d5ef9e7ba6be0b2163cfa31f8817ba5b18f4
+  ZT_VERSION: "1.6.5"
+
+jobs:
+  build:
+    name: Build images
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [ amd64, i386, arm64v8, arm32v7, arm32v6 ]
+    steps:
+      - name: Checkout zerotier-docker
+        uses: actions/checkout@v2
+
+      - name: Install qemu dependency
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-user-static
+
+      - name: Create Dockerfile
+        run: |
+          cat > Dockerfile << EOF
+
+          ARG ARCH
+          ARG ALPINE_VERSION
+          ARG ZT_COMMIT
+          ARG ZT_VERSION
+
+          FROM docker.io/\${ARCH}/alpine:${ALPINE_VERSION} as builder
+
+          RUN apk add --update alpine-sdk linux-headers \
+            && git clone --quiet https://github.com/zerotier/ZeroTierOne.git /src \
+            && git -C src reset --quiet --hard ${ZT_COMMIT} \
+            && cd /src \
+            && make -f make-linux.mk
+
+          FROM docker.io/\${ARCH}/alpine:${ALPINE_VERSION}
+          LABEL version="${ZT_VERSION}"
+          LABEL description="ZeroTier One as Docker Image"
+
+          RUN apk add --update --no-cache libc6-compat libstdc++
+
+          EXPOSE 9993/udp
+
+          COPY --from=builder /src/zerotier-one /usr/sbin/
+          RUN mkdir -p /var/lib/zerotier-one \
+            && ln -s /usr/sbin/zerotier-one /usr/sbin/zerotier-idtool \
+            && ln -s /usr/sbin/zerotier-one /usr/sbin/zerotier-cli
+
+          ENTRYPOINT ["zerotier-one"]
+          EOF
+
+      - name: Build Image
+        id: build_image
+        uses: redhat-actions/buildah-build@v2
+        with:
+          image: ${{ env.IMAGE_NAME }}
+          tags: ${{ matrix.arch }}
+          arch: ${{ matrix.arch }}
+          build-args: |
+            ARCH=${{ matrix.arch }}
+            ALPINE_VERSION=${{ env.ALPINE_VERSION }}
+            ZT_COMMIT=${{ env.ZT_COMMIT }}
+            ZT_VERSION=${{ env.ZT_VERSION }}
+          dockerfiles: |
+            ./Dockerfile
+
+      - name: Echo Outputs
+        run: |
+          echo "Image: ${{ steps.build_image.outputs.image }}"
+          echo "Tags: ${{ steps.build_image.outputs.tags }}"
+
+      - name: Check images created
+        run: buildah images | grep '${{ env.IMAGE_NAME }}'
+
+      - name: Check image metadata
+        run: |
+          set -x
+          buildah inspect ${{ steps.build_image.outputs.image }}:${{ matrix.arch }} | jq ".OCIv1.architecture"
+          buildah inspect ${{ steps.build_image.outputs.image }}:${{ matrix.arch }} | jq ".Docker.architecture"
+
+      - name: Export image
+        run: podman save -o /tmp/image.tar ${{ steps.build_image.outputs.image }}:${{ matrix.arch }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: image-${{ matrix.arch }}
+          path: /tmp/image.tar
+
+  push:
+    name: Publish images
+    runs-on: ubuntu-latest
+    needs: build
+    environment: production
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+
+      - name: Import images
+        run: |
+          podman load -i ./image-amd64/image.tar
+          podman load -i ./image-i386/image.tar
+          podman load -i ./image-arm64v8/image.tar
+          podman load -i ./image-arm32v7/image.tar
+          podman load -i ./image-arm32v6/image.tar
+
+      - name: Create multi-arch manifest
+        run: |
+          buildah manifest create ${{ env.IMAGE_NAME }}:latest
+          buildah manifest add --arch amd64 ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:amd64
+          buildah manifest add --arch 386 ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:i386
+          buildah manifest add --arch arm64 --variant v8 ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:arm64v8
+          buildah manifest add --arch arm --variant v7 ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:arm32v7
+          buildah manifest add --arch arm --variant v6 ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:arm32v6
+
+      - name: Push images
+        run: |
+          buildah manifest push --all --creds zyclonite:${{ secrets.REGISTRY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://docker.io/zyclonite/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
