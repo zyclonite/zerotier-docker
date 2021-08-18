@@ -139,4 +139,4 @@ jobs:
         if: ${{ github.event_name == 'release' }}
         run: |
           buildah manifest push --all --format v2s2 --creds zyclonite:${{ secrets.REGISTRY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://docker.io/zyclonite/${{ env.IMAGE_NAME }}:latest
-          buildah manifest push --all --format v2s2 --creds zyclonite:${{ secrets.REGISTRY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://docker.io/zyclonite/${{ env.IMAGE_NAME }}:${{ github.ref }}
+          buildah manifest push --all --format v2s2 --creds zyclonite:${{ secrets.REGISTRY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://docker.io/zyclonite/${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}
