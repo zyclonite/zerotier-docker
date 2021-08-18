@@ -1,11 +1,17 @@
 name: Multiarch build
 on:
   push:
+    branches:
+      - main
   pull_request:
+    branches:
+      - main
+  release:
+    types:
+      - created
 
 env:
   IMAGE_NAME: zerotier
-  IMAGE_TAG: main
   ALPINE_VERSION: "3.14"
   ZT_COMMIT: e8f7d5ef9e7ba6be0b2163cfa31f8817ba5b18f4
   ZT_VERSION: "1.6.5"
@@ -124,6 +130,13 @@ jobs:
           buildah manifest add --arch arm --variant v7 ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:arm32v7
           buildah manifest add --arch arm --variant v6 ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:arm32v6
 
-      - name: Push images
+      - name: Push unstable images
+        if: ${{ github.event_name == 'push' }}
         run: |
-          buildah manifest push --all --creds zyclonite:${{ secrets.REGISTRY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://docker.io/zyclonite/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          buildah manifest push --all --format v2s2 --creds zyclonite:${{ secrets.REGISTRY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://docker.io/zyclonite/${{ env.IMAGE_NAME }}:main
+
+      - name: Push stable images
+        if: ${{ github.event_name == 'release' }}
+        run: |
+          buildah manifest push --all --format v2s2 --creds zyclonite:${{ secrets.REGISTRY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://docker.io/zyclonite/${{ env.IMAGE_NAME }}:latest
+          buildah manifest push --all --format v2s2 --creds zyclonite:${{ secrets.REGISTRY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://docker.io/zyclonite/${{ env.IMAGE_NAME }}:${{ github.ref }}
