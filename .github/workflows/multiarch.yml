@@ -41,7 +41,7 @@ jobs:
           tags: ${{ matrix.arch }}
           arch: ${{ matrix.arch }}
           build-args: |
-            ARCH=${{ matrix.arch }}
+            ALPINE_ARCH=${{ matrix.arch }}
             ALPINE_VERSION=${{ env.ALPINE_VERSION }}
             ZT_COMMIT=${{ env.ZT_COMMIT }}
             ZT_VERSION=${{ env.ZT_VERSION }}
