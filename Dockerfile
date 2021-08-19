@@ -1,8 +1,9 @@
-ARG FROM_IMAGE
-ARG ZT_COMMIT
-ARG ZT_VERSION
+ARG ALPINE_IMAGE
+ARG ALPINE_VERSION=3.14
+ARG ZT_COMMIT=e8f7d5ef9e7ba6be0b2163cfa31f8817ba5b18f4
+ARG ZT_VERSION=1.6.5
 
-FROM ${FROM_IMAGE} as builder
+FROM ${FROM_IMAGE}:${ALPINE_VERSION} as builder
 
 RUN apk add --update alpine-sdk linux-headers \
   && git clone --quiet https://github.com/zerotier/ZeroTierOne.git /src \
@@ -10,7 +11,7 @@ RUN apk add --update alpine-sdk linux-headers \
   && cd /src \
   && make -f make-linux.mk
 
-FROM ${FROM_IMAGE}
+FROM ${FROM_IMAGE}:${ALPINE_VERSION}
 LABEL version="${ZT_VERSION}"
 LABEL description="ZeroTier One as Docker Image"
 

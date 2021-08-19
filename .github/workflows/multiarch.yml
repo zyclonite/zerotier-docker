@@ -12,9 +12,6 @@ on:
 
 env:
   IMAGE_NAME: zerotier
-  ALPINE_VERSION: "3.14"
-  ZT_COMMIT: e8f7d5ef9e7ba6be0b2163cfa31f8817ba5b18f4
-  ZT_VERSION: "1.6.5"
 
 jobs:
   build:
@@ -41,9 +38,7 @@ jobs:
           tags: ${{ matrix.arch }}
           arch: ${{ matrix.arch }}
           build-args: |
-            FROM_IMAGE=${{ format('docker.io/{0}/alpine:{1}', matrix.arch, env.ALPINE_VERSION) }}
-            ZT_COMMIT=${{ env.ZT_COMMIT }}
-            ZT_VERSION=${{ env.ZT_VERSION }}
+            ALPINE_IMAGE=${{ format('docker.io/{0}/alpine', matrix.arch) }}
           dockerfiles: |
             ./Dockerfile
 
