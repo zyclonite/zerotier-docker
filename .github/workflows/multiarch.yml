@@ -42,11 +42,6 @@ jobs:
           dockerfiles: |
             ./Dockerfile
 
-      - name: Echo Outputs
-        run: |
-          echo "Image: ${{ steps.build_image.outputs.image }}"
-          echo "Tags: ${{ steps.build_image.outputs.tags }}"
-
       - name: Check images created
         run: buildah images | grep '${{ env.IMAGE_NAME }}'
 
