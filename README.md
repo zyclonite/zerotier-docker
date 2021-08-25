@@ -1,4 +1,5 @@
 [![Docker Pulls](https://badgen.net/docker/pulls/zyclonite/zerotier)](https://hub.docker.com/r/zyclonite/zerotier)
+[![Quay.io Enabled](https://badgen.net/badge/quay%20pulls/enabled/green)](https://quay.io/repository/zyclonite/zerotier)
 [![Multiarch build](https://github.com/zyclonite/zerotier-docker/actions/workflows/multiarch.yml/badge.svg)](https://github.com/zyclonite/zerotier-docker/actions/workflows/multiarch.yml)
 
 ## zerotier-docker
