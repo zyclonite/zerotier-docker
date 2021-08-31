@@ -17,16 +17,20 @@ FROM ${ALPINE_IMAGE}:${ALPINE_VERSION}
 
 ARG ZT_VERSION
 
-LABEL version="${ZT_VERSION}"
-LABEL description="ZeroTier One as Docker Image"
-
-RUN apk add --update --no-cache libc6-compat libstdc++
-
-EXPOSE 9993/udp
+LABEL org.opencontainers.image.title="zerotier" \
+      org.opencontainers.image.version="${ZT_VERSION}" \
+      org.opencontainers.image.description="ZeroTier One as Docker Image" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.source="https://github.com/zyclonite/zerotier-docker"
 
 COPY --from=builder /src/zerotier-one /usr/sbin/
-RUN mkdir -p /var/lib/zerotier-one \
+
+RUN apk add --no-cache --purge --clean-protected --update libc6-compat libstdc++ \
+  && mkdir -p /var/lib/zerotier-one \
   && ln -s /usr/sbin/zerotier-one /usr/sbin/zerotier-idtool \
-  && ln -s /usr/sbin/zerotier-one /usr/sbin/zerotier-cli
+  && ln -s /usr/sbin/zerotier-one /usr/sbin/zerotier-cli \
+  && rm -rf /var/cache/apk/*
+
+EXPOSE 9993/udp
 
 ENTRYPOINT ["zerotier-one"]
