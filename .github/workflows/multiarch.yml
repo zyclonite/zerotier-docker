@@ -91,6 +91,7 @@ jobs:
         run: |
           buildah manifest push --all --format v2s2 --creds zyclonite:${{ secrets.REGISTRY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://docker.io/zyclonite/${{ env.IMAGE_NAME }}:main
           buildah manifest push --all --creds zyclonite:${{ secrets.QUAY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://quay.io/zyclonite/${{ env.IMAGE_NAME }}:main
+          buildah manifest push --all --creds zyclonite:${{ secrets.GITHUB_TOKEN }} ${{ env.IMAGE_NAME }}:latest docker://ghcr.io/zyclonite/${{ env.IMAGE_NAME }}:main
 
       - name: Push stable images
         if: ${{ github.event_name == 'release' }}
@@ -99,3 +100,5 @@ jobs:
           buildah manifest push --all --format v2s2 --creds zyclonite:${{ secrets.REGISTRY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://docker.io/zyclonite/${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}
           buildah manifest push --all --creds zyclonite:${{ secrets.QUAY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://quay.io/zyclonite/${{ env.IMAGE_NAME }}:latest
           buildah manifest push --all --creds zyclonite:${{ secrets.QUAY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://quay.io/zyclonite/${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}
+          buildah manifest push --all --creds zyclonite:${{ secrets.GITHUB_TOKEN }} ${{ env.IMAGE_NAME }}:latest docker://ghcr.io/zyclonite/${{ env.IMAGE_NAME }}:latest
+          buildah manifest push --all --creds zyclonite:${{ secrets.GITHUB_TOKEN }} ${{ env.IMAGE_NAME }}:latest docker://ghcr.io/zyclonite/${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}
