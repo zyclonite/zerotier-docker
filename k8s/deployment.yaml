@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zerotier
+spec:
+  selector:
+    matchLabels:
+      app: zerotier
+  template:
+    metadata:
+      labels:
+        app: zerotier
+    spec:
+      initContainers:
+        - name: network-joiner
+          image: busybox
+          env:
+            - name: NETWORK_ID
+              value: "<replace with network id>"
+          command: [ "sh", "-c", "mkdir -p /mnt/networks.d && touch /mnt/networks.d/$(NETWORK_ID).conf" ]
+          volumeMounts:
+            - name: vol
+              subPath: config
+              mountPath: /mnt
+              
+      containers:
+      - name: zerotier
+        image: zyclonite/zerotier
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - name: net
+          containerPort: 9993
+        volumeMounts:
+          - name: vol
+            subPath: config
+            mountPath: /var/lib/zerotier-one
+          - name: tun
+            readOnly: true
+            mountPath: /dev/net/tun
+      
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+            - SYS_ADMIN
+      
+      dnsPolicy: "None"
+      dnsConfig:
+        nameservers:
+          - 1.1.1.1
+          - 8.8.8.8
+
+      volumes:
+        - name: vol
+          persistentVolumeClaim:
+            claimName: zerotier
+        - name: tun
+          hostPath:
+            path: /dev/net/tun
+            type: ''

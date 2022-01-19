@@ -25,14 +25,21 @@ LABEL org.opencontainers.image.title="zerotier" \
 
 COPY --from=builder /src/zerotier-one /usr/sbin/
 
-RUN apk add --no-cache --purge --clean-protected --update libc6-compat libstdc++ \
+RUN apk add --no-cache --purge --clean-protected --update libc6-compat libstdc++ supervisor iptables \
   && mkdir -p /var/lib/zerotier-one \
+  && mkdir -p /var/log/supervisor \
   && ln -s /usr/sbin/zerotier-one /usr/sbin/zerotier-idtool \
   && ln -s /usr/sbin/zerotier-one /usr/sbin/zerotier-cli \
   && rm -rf /var/cache/apk/*
 
+ENV LOG_PATH=/var/log/supervisor \
+    BRIDGE=false
+
+COPY conf /opt
+COPY scripts /opt
+
 EXPOSE 9993/udp
 
-ENTRYPOINT ["zerotier-one"]
+ENTRYPOINT ["/opt/entrypoint.sh"]
 
 CMD ["-U"]
