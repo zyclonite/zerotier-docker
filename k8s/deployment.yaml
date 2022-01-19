@@ -26,6 +26,9 @@ spec:
       containers:
       - name: zerotier
         image: zyclonite/zerotier
+        env:
+          - name: BRIDGE
+            value: "true"
         resources:
           limits:
             memory: "128Mi"
