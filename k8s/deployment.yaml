@@ -25,7 +25,7 @@ spec:
               
       containers:
       - name: zerotier
-        image: zyclonite/zerotier
+        image: zyclonite/zerotier-bridge:latest
         env:
           - name: BRIDGE
             value: "true"
