@@ -5,12 +5,6 @@ set -o pipefail
 set -o nounset
 # set -o xtrace
 
-echo "Checking if bridge is required..."
-if [ "$BRIDGE" = "false" ]; then
-    echo "Bridge is not required. Exiting..."
-    exit 0
-fi
-echo "Bridge is required. Starting..."
 echo "Waiting for network interface to be ready..."
 
 while ! ifconfig | grep -q zt; do

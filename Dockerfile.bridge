@@ -1,19 +1,12 @@
-ARG ALPINE_IMAGE=alpine
-ARG ALPINE_VERSION=3.15
-ARG ZT_COMMIT=eac56a2e25bbd27f77505cbd0c21b86abdfbd36b
-ARG ZT_VERSION=1.8.4
-
-FROM zyclonite/zerotier
+FROM zyclonite/zerotier:latest
 
 RUN apk add --no-cache --purge --clean-protected --update supervisor iptables \
   && mkdir -p /var/log/supervisor \
   && rm -rf /var/cache/apk/*
 
-ENV LOG_PATH=/var/log/supervisor \
-    BRIDGE=false
+ENV LOG_PATH=/var/log/supervisor
 
-COPY conf /opt
-COPY scripts /opt
+COPY conf scripts /opt
 
 EXPOSE 9993/udp
 

@@ -35,11 +35,9 @@ or create an empty file with the network as name
 #### Bridge mode
 It is the implementation of the local network bridge [paper](https://zerotier.atlassian.net/wiki/spaces/SD/pages/193134593/Bridge+your+ZeroTier+and+local+network+with+a+RaspberryPi)
 
-To enable it, remove the host network parameter and add `Bridge=true` to environment variables.
-
-    docker run --name zerotier-one --device=/dev/net/tun -e BRIDGE=true \
+    docker run --name zerotier-one --device=/dev/net/tun \
       --cap-add=NET_ADMIN --cap-add=SYS_ADMIN \
-      -v /var/lib/zerotier-one:/var/lib/zerotier-one zyclonite/zerotier-bridge
+      -v /var/lib/zerotier-one:/var/lib/zerotier-one zyclonite/zerotier:bridge
 
 That will start the zero-one, establish connection and build the bridge once the `zt` interface is up.
 
