@@ -1,0 +1,15 @@
+FROM zyclonite/zerotier:latest
+
+RUN apk add --no-cache --purge --clean-protected --update supervisor iptables \
+  && mkdir -p /var/log/supervisor \
+  && rm -rf /var/cache/apk/*
+
+ENV LOG_PATH=/var/log/supervisor
+
+COPY conf scripts /opt
+
+EXPOSE 9993/udp
+
+ENTRYPOINT ["/opt/entrypoint.sh"]
+
+CMD ["-U"]
