@@ -1,6 +1,9 @@
-FROM zyclonite/zerotier:latest
+ARG FROM_IMAGE=zyclonite/zerotier
+ARG FROM_VERSION=latest
 
-RUN apk add --no-cache --purge --clean-protected --update supervisor iptables \
+FROM ${FROM_IMAGE}:${FROM_VERSION}
+
+RUN apk add --no-cache --purge --clean-protected supervisor iptables \
   && mkdir -p /var/log/supervisor \
   && rm -rf /var/cache/apk/*
 

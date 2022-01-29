@@ -25,7 +25,7 @@ LABEL org.opencontainers.image.title="zerotier" \
 
 COPY --from=builder /src/zerotier-one /usr/sbin/
 
-RUN apk add --no-cache --purge --clean-protected --update libc6-compat libstdc++ \
+RUN apk add --no-cache --purge --clean-protected libc6-compat libstdc++ \
   && mkdir -p /var/lib/zerotier-one \
   && ln -s /usr/sbin/zerotier-one /usr/sbin/zerotier-idtool \
   && ln -s /usr/sbin/zerotier-one /usr/sbin/zerotier-cli \
