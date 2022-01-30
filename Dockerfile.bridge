@@ -3,13 +3,12 @@ ARG FROM_VERSION=latest
 
 FROM ${FROM_IMAGE}:${FROM_VERSION}
 
-RUN apk add --no-cache --purge --clean-protected supervisor iptables \
-  && mkdir -p /var/log/supervisor \
+RUN apk add --no-cache --purge --clean-protected iptables \
   && rm -rf /var/cache/apk/*
 
 ENV LOG_PATH=/var/log/supervisor
 
-COPY conf scripts /opt
+COPY scripts /opt
 
 EXPOSE 9993/udp
 
