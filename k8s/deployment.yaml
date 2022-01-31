@@ -22,7 +22,7 @@ spec:
             - name: vol
               subPath: config
               mountPath: /mnt
-              
+
       containers:
       - name: zerotier
         image: zyclonite/zerotier:bridge
@@ -40,13 +40,14 @@ spec:
           - name: tun
             readOnly: true
             mountPath: /dev/net/tun
-      
+
         securityContext:
           capabilities:
             add:
             - NET_ADMIN
+            - NET_RAW
             - SYS_ADMIN
-      
+
       dnsPolicy: "None"
       dnsConfig:
         nameservers:
