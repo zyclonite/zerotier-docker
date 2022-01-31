@@ -29,7 +29,8 @@ jobs:
           {os: "linux", arch: "386", variant: "", name: "i386"},
           {os: "linux", arch: "arm64", variant: "v8", name: "arm64v8"},
           {os: "linux", arch: "arm", variant: "v7", name: "arm32v7"},
-          {os: "linux", arch: "arm", variant: "v6", name: "arm32v6"}
+          {os: "linux", arch: "arm", variant: "v6", name: "arm32v6"},
+          {os: "linux", arch: "riscv64", variant: "", name: "riscv64"}
         ]
     steps:
       - name: Checkout zerotier-docker
@@ -100,6 +101,7 @@ jobs:
           podman load -i ./image-arm64v8/image.tar
           podman load -i ./image-arm32v7/image.tar
           podman load -i ./image-arm32v6/image.tar
+          podman load -i ./image-riscv64/image.tar
 
       - name: Create multi-arch manifest
         run: |
@@ -109,6 +111,7 @@ jobs:
           buildah manifest add --arch arm64 --variant v8 ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:arm64v8
           buildah manifest add --arch arm --variant v7 ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:arm32v7
           buildah manifest add --arch arm --variant v6 ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:arm32v6
+          buildah manifest add --arch riscv64 ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:riscv64
 
       - name: Push unstable images
         if: ${{ inputs.event == 'push' }}
