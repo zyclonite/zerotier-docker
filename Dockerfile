@@ -7,7 +7,8 @@ FROM ${ALPINE_IMAGE}:${ALPINE_VERSION} as builder
 
 ARG ZT_COMMIT
 
-RUN apk add --update alpine-sdk linux-headers \
+RUN apk add --update alpine-sdk linux-headers openssl-dev \
+  && apk add cargo || true \
   && git clone --quiet https://github.com/zerotier/ZeroTierOne.git /src \
   && git -C src reset --quiet --hard ${ZT_COMMIT} \
   && cd /src \
