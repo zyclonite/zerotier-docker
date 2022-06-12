@@ -21,12 +21,12 @@ jobs:
       fail-fast: false
       matrix:
         platform: [
-          {os: "linux", arch: "amd64", variant: "", name: "amd64"},
-          {os: "linux", arch: "386", variant: "", name: "i386"},
-          {os: "linux", arch: "arm64", variant: "v8", name: "arm64v8"},
-          {os: "linux", arch: "arm", variant: "v7", name: "arm32v7"},
-          {os: "linux", arch: "arm", variant: "v6", name: "arm32v6"},
-          {os: "linux", arch: "riscv64", variant: "", name: "riscv64"}
+          {name: "linux/amd64", tag: "amd64"},
+          {name: "linux/386", tag: "i386"},
+          {name: "linux/arm64/v8", tag: "arm64v8"},
+          {name: "linux/arm/v7", tag: "arm32v7"},
+          {name: "linux/arm/v6", tag: "arm32v6"},
+          {name: "linux/riscv64", tag: "riscv64"}
         ]
     steps:
       - name: Checkout zerotier-docker
@@ -41,8 +41,8 @@ jobs:
         uses: redhat-actions/buildah-build@v2
         with:
           image: ${{ env.IMAGE_NAME }}
-          tags: ${{ matrix.platform.name }}
-          platform: ${{ format('{0}/{1}/{2}', matrix.platform.os, matrix.platform.arch, matrix.platform.variant) }}
+          tags: ${{ matrix.platform.tag }}
+          platform: ${{ matrix.platform.name }}
           build-args: |
             ALPINE_IMAGE=docker.io/alpine
           dockerfiles: |
@@ -54,16 +54,16 @@ jobs:
       - name: Check image metadata
         run: |
           set -x
-          buildah inspect ${{ env.IMAGE_NAME }}:${{ matrix.platform.name }} | jq ".OCIv1.architecture"
-          buildah inspect ${{ env.IMAGE_NAME }}:${{ matrix.platform.name }} | jq ".Docker.architecture"
+          buildah inspect ${{ env.IMAGE_NAME }}:${{ matrix.platform.tag }} | jq ".OCIv1.architecture"
+          buildah inspect ${{ env.IMAGE_NAME }}:${{ matrix.platform.tag }} | jq ".Docker.architecture"
 
       - name: Export image
-        run: podman save -o /tmp/image.tar ${{ env.IMAGE_NAME }}:${{ matrix.platform.name }}
+        run: podman save -o /tmp/image.tar ${{ env.IMAGE_NAME }}:${{ matrix.platform.tag }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
-          name: image-${{ matrix.platform.name }}
+          name: image-${{ matrix.platform.tag }}
           path: /tmp/image.tar
 
   push:
@@ -87,12 +87,12 @@ jobs:
       - name: Create multi-arch manifest
         run: |
           buildah manifest create ${{ env.IMAGE_NAME }}:latest
-          buildah manifest add ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:amd64
-          buildah manifest add ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:i386
-          buildah manifest add ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:arm64v8
-          buildah manifest add ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:arm32v7
-          buildah manifest add ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:arm32v6
-          buildah manifest add ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:riscv64
+          buildah manifest add --arch amd64 ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:amd64
+          buildah manifest add --arch 386 ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:i386
+          buildah manifest add --arch arm64 --variant v8 ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:arm64v8
+          buildah manifest add --arch arm --variant v7 ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:arm32v7
+          buildah manifest add --arch arm --variant v6 ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:arm32v6
+          buildah manifest add --arch riscv64 ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:riscv64
 
       - name: Push unstable images
         if: ${{ github.event_name == 'push' }}
