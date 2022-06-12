@@ -8,6 +8,7 @@ FROM ${ALPINE_IMAGE}:${ALPINE_VERSION} as builder
 ARG ZT_COMMIT
 
 COPY patches /patches
+COPY scripts /scripts
 
 RUN apk add --update alpine-sdk linux-headers openssl-dev \
   && git clone --quiet https://github.com/zerotier/ZeroTierOne.git /src \
@@ -26,7 +27,7 @@ LABEL org.opencontainers.image.title="zerotier" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.source="https://github.com/zyclonite/zerotier-docker"
 
-COPY --from=builder /src/zerotier-one /src/scripts/entrypoint.sh /usr/sbin/
+COPY --from=builder /src/zerotier-one /scripts/entrypoint.sh /usr/sbin/
 
 RUN apk add --no-cache --purge --clean-protected libc6-compat libstdc++ \
   && mkdir -p /var/lib/zerotier-one \
