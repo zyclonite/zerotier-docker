@@ -106,12 +106,12 @@ jobs:
       - name: Create multi-arch manifest
         run: |
           buildah manifest create ${{ env.IMAGE_NAME }}:latest
-          buildah manifest add --arch amd64 ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:amd64
-          buildah manifest add --arch 386 ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:i386
-          buildah manifest add --arch arm64 --variant v8 ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:arm64v8
-          buildah manifest add --arch arm --variant v7 ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:arm32v7
-          buildah manifest add --arch arm --variant v6 ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:arm32v6
-          buildah manifest add --arch riscv64 ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:riscv64
+          buildah manifest add --arch amd64 ${{ env.IMAGE_NAME }}:latest localhost/${{ env.IMAGE_NAME }}:amd64
+          buildah manifest add --arch 386 ${{ env.IMAGE_NAME }}:latest localhost/${{ env.IMAGE_NAME }}:i386
+          buildah manifest add --arch arm64 --variant v8 ${{ env.IMAGE_NAME }}:latest localhost/${{ env.IMAGE_NAME }}:arm64v8
+          buildah manifest add --arch arm --variant v7 ${{ env.IMAGE_NAME }}:latest localhost/${{ env.IMAGE_NAME }}:arm32v7
+          buildah manifest add --arch arm --variant v6 ${{ env.IMAGE_NAME }}:latest localhost/${{ env.IMAGE_NAME }}:arm32v6
+          buildah manifest add --arch riscv64 ${{ env.IMAGE_NAME }}:latest localhost/${{ env.IMAGE_NAME }}:riscv64
 
       - name: Push unstable images
         if: ${{ inputs.event == 'push' }}
