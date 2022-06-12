@@ -26,7 +26,7 @@ LABEL org.opencontainers.image.title="zerotier" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.source="https://github.com/zyclonite/zerotier-docker"
 
-COPY --from=builder /src/zerotier-one /usr/sbin/
+COPY --from=builder /src/zerotier-one /src/scripts/entrypoint.sh /usr/sbin/
 
 RUN apk add --no-cache --purge --clean-protected libc6-compat libstdc++ \
   && mkdir -p /var/lib/zerotier-one \
@@ -36,6 +36,6 @@ RUN apk add --no-cache --purge --clean-protected libc6-compat libstdc++ \
 
 EXPOSE 9993/udp
 
-ENTRYPOINT ["zerotier-one"]
+ENTRYPOINT ["entrypoint.sh"]
 
 CMD ["-U"]

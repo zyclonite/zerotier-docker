@@ -8,10 +8,10 @@ RUN apk add --no-cache --purge --clean-protected iptables \
 
 ENV LOG_PATH=/var/log/supervisor
 
-COPY scripts /opt
+COPY scripts/entrypoint-bridge.sh /usr/sbin/
 
 EXPOSE 9993/udp
 
-ENTRYPOINT ["/opt/entrypoint.sh"]
+ENTRYPOINT ["entrypoint-bridge.sh"]
 
 CMD ["-U"]
