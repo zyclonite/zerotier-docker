@@ -25,7 +25,7 @@ spec:
 
       containers:
       - name: zerotier
-        image: zyclonite/zerotier:bridge
+        image: zyclonite/zerotier:router
         resources:
           limits:
             memory: "128Mi"
