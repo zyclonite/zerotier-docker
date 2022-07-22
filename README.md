@@ -99,19 +99,29 @@ The following environment variables are supported:
 
 	Defaults to `false` if omitted. Try `true` if NAT does not seem to be working.
 	
-* `ZEROTIER_ONE_NETWORK_ID` – auto-join network on first launch. Example:
+* `ZEROTIER_ONE_NETWORK_IDS` – auto-join network(s). This variable is only effective on first launch. There is no default if it is omitted. Examples:
 
-	``` yaml
-	ZEROTIER_ONE_NETWORK_ID=565758596a6b6c44
-	```
+	- if using `docker run`:
+
+		``` console
+		--env ZEROTIER_ONE_NETWORK_IDS="aaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbb"
+		```
 	
-	This variable is only effective on first launch. There is no default if it is omitted. It is the equivalent of running the following command after the container first starts:
+	- if using `docker-compose`:
+
+		``` yaml
+		environment:
+		- ZEROTIER_ONE_NETWORK_IDS=aaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbb
+		```
+
+	In each case, it is the equivalent of running the following commands after the container first starts:
 	
 	```
-	$ docker exec zerotier zerotier-cli join 565758596a6b6c44
+	$ docker exec zerotier zerotier-cli join aaaaaaaaaaaaaaaa
+	$ docker exec zerotier zerotier-cli join bbbbbbbbbbbbbbbb
 	```
 
-	It does not matter whether you use this environment variable or the `join` command, you still need to authorize the computer in ZeroTier Central.
+	It does not matter whether you use this environment variable or the `join` command, you still need to authorize the computer for each network in ZeroTier Central.
 
 #### Source
 
