@@ -2,7 +2,6 @@
 set -Eeo pipefail
 
 echo "$(date) - launching ZeroTier-One in routing mode"
-echo "command and args: $@"
 
 if [ "${1:0:1}" = '-' ]; then
 	set -- zerotier-one "$@"
@@ -25,7 +24,7 @@ if [ ! -d "${NETWORKS_DIR}" -a -n "${ZEROTIER_ONE_NETWORK_IDS}" ] ; then
 	done
 fi
 
-# make sure permissions are correct
+# make sure permissions are always as expected (self-repair)
 PUID="${PUID:-"999"}"
 PGID="${PGID:-"994"}"
 if [ "$(id -u)" = '0' -a -d "${CONFIG_DIR}" ]; then
@@ -33,82 +32,83 @@ if [ "$(id -u)" = '0' -a -d "${CONFIG_DIR}" ]; then
 fi
 
 # use an appropriate default for a local physical interface
+# (using eth0 maintains backwards compatibility)
 PHY_IFACES="${ZEROTIER_ONE_LOCAL_PHYS:-"eth0"}"
 
-# default to iptables (maintain compatibility for existing systems)
+# default to iptables (maintains backwards compatibility)
 IPTABLES_CMD=iptables
-# but support override to use iptables-nft
+# but support an override to use iptables-nft
 [ "${ZEROTIER_ONE_USE_IPTABLES_NFT}" = "true" ] && IPTABLES_CMD=iptables-nft
 
 # the wildcard for the local zerotier interface is
 ZT_IFACE="zt+"
 
-# a script to add and remove the requisite rules - $1 is either "A" or "D"
+# function to add and remove the requisite rules
+# - $1 is either "A" (add) or "D" (delete)
 update_iptables() {
-
-	# iterate the local interface(s) and enable NAT services
 	for PHY_IFACE in ${PHY_IFACES} ; do
 		${IPTABLES_CMD} -t nat -${1} POSTROUTING -o ${PHY_IFACE} -j MASQUERADE
 		${IPTABLES_CMD} -${1} FORWARD -i ${PHY_IFACE} -o ${ZT_IFACE} -m state --state RELATED,ESTABLISHED -j ACCEPT
 		${IPTABLES_CMD} -${1} FORWARD -i ${ZT_IFACE} -o ${PHY_IFACE} -j ACCEPT
 	done
-
 }
 
-# add rules to set up routing
-echo "Using ${IPTABLES_CMD} to enable NAT services on ${PHY_IFACES}"
+# add rules to set up NAT-routing
 update_iptables "A"
 
 # define where the ZeroTier daemon will write its output (if any)
-PIPE=$(mktemp /tmp/zerotier-ipc-XXXXXX)
+TAIL_PIPE=$(mktemp /tmp/zerotier-ipc-XXXXXX)
 
 # start listening and echoing anything that appears there into this process
-tail -f "${PIPE}" &
+tail -f "${TAIL_PIPE}" &
 
 # make a note of the process ID for tail
 TAIL_PIPE_PID=${!}
 
-# report
-echo "tail has started with PID=${TAIL_PIPE_PID} listening to ${PIPE}"
-
-# now start the ZeroTier daemon in detached state
-nohup "$@" </dev/null >"${PIPE}" 2>&1 &
+# start the ZeroTier daemon in detached state
+nohup "$@" </dev/null >"${TAIL_PIPE}" 2>&1 &
 
 # make a note of the process ID
 ZEROTIER_DAEMON_PID=${!}
 
 # report
-echo "ZeroTier daemon has PID ${ZEROTIER_DAEMON_PID}"
+echo "$(date) - ZeroTier daemon is running as process ${ZEROTIER_DAEMON_PID}"
 
-echo "Setting up trap"
-trap 'echo "**INT" ; kill -TERM ${ZEROTIER_DAEMON_PID}' INT
-trap 'echo "**TERM" ; kill -TERM ${ZEROTIER_DAEMON_PID}' TERM
-trap 'echo "**HUP" ; kill -TERM ${ZEROTIER_DAEMON_PID}' HUP
+# function to handle cleanup
+termination_handler() {
 
-trap 'echo "**EXIT-nohandler"' EXIT
-trap 'echo "**ABRT-nohandler"' ABRT
-trap 'echo "**QUIT-nohandler"' QUIT
-trap 'echo "**TRAP-nohandler"' TRAP
+	echo "$(date) - terminating ZeroTier-One"
 
-echo "now waiting on ZeroTier daemon"
+	# remove rules
+	update_iptables "D"
+
+	# relay the termination message to the daemon
+	if [ -d "/proc/${ZEROTIER_DAEMON_PID}" ] ; then
+		kill -TERM ${ZEROTIER_DAEMON_PID}
+		wait ${ZEROTIER_DAEMON_PID}
+	fi
+
+	# tell the pipe listener to go away too
+	if [ -d "/proc/${TAIL_PIPE_PID}" ] ; then
+		kill -TERM ${TAIL_PIPE_PID}
+		wait ${TAIL_PIPE_PID}
+	fi
+
+	# clean up the pipe file
+	rm "${TAIL_PIPE}"
+
+}
+
+# set up termination handler (usually catches TERM)
+trap termination_handler INT TERM HUP
+
+# suspend this script while the zerotier daemon is running
 wait ${ZEROTIER_DAEMON_PID}
-echo "the ZeroTier daemon has gone away - cleaning up"
 
-# kill the tail listener
-echo "Killing tail listener"
-kill -TERM ${TAIL_PIPE_PID}
+# would not usually expect to arrive here inside a Docker container but
+# it can happen if the user does a "sudo killall zerotier-one" rather
+# that use Docker commands
+echo "$(date) - the ZeroTier daemon has quit unexpectedly - cleaning up"
 
-# wait for it to go away
-echo "Waiting for tail listener to go away"
-wait ${TAIL_PIPE_PID}
-
-# which means we are done with the pipe
-echo "removing pipe"
-rm "${PIPE}"
-
-# remove rules used to set up routing
-echo "Using ${IPTABLES_CMD} to disable NAT services on ${PHY_IFACES}"
-update_iptables "D"
-
-# using the sigterm is a normal exit for us so exit with 0
-echo "all done"
+# run the termination handler
+termination_handler
