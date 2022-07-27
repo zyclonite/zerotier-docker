@@ -19,4 +19,5 @@ services:
       - PGID=994
       - ZEROTIER_ONE_LOCAL_PHYS=eth0
       - ZEROTIER_ONE_USE_IPTABLES_NFT=false
+      - ZEROTIER_ONE_GATEWAY_MODE=inbound
     # - ZEROTIER_ONE_NETWORK_IDS=yourNetworkID

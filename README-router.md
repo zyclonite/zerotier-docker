@@ -19,6 +19,7 @@ $ docker run --name zerotier-one --device=/dev/net/tun \
   --env TZ=Etc/UTC --env PUID=999 -env PGID=994 \
   --env ZEROTIER_ONE_LOCAL_PHYS=eth0 \
   --env ZEROTIER_ONE_USE_IPTABLES_NFT=false \
+  --env ZEROTIER_ONE_GATEWAY_MODE=inbound \
   --env ZEROTIER_ONE_NETWORK_IDS=«yourDefaultNetworkID(s)» \
   -v /var/lib/zerotier-one:/var/lib/zerotier-one zyclonite/zerotier:router
 ```
@@ -55,6 +56,7 @@ services:
       - PGID=994
       - ZEROTIER_ONE_LOCAL_PHYS=eth0
       - ZEROTIER_ONE_USE_IPTABLES_NFT=false
+      - ZEROTIER_ONE_GATEWAY_MODE=inbound
     # - ZEROTIER_ONE_NETWORK_IDS=«yourDefaultNetworkID(s)»
 ```
 
@@ -129,6 +131,31 @@ Note:
 	- `true` means the container uses `iptables-nft`.
 
 	Try `true` if NAT does not seem to be working. This is needed on Raspberry Pi Bullseye.
+	
+* `ZEROTIER_ONE_GATEWAY_MODE` - controls the traffic direction. Examples:
+
+	- Only permit traffic *from* the ZeroTier cloud *to* the local physical interfaces:
+
+		``` yaml
+		environment:
+		- ZEROTIER_ONE_GATEWAY_MODE=inbound
+		```
+		
+	- Only permit traffic *from* the local physical interfaces *to* the ZeroTier cloud:
+
+		``` yaml
+		environment:
+		- ZEROTIER_ONE_GATEWAY_MODE=outbound
+		```
+
+	- Permit bi-directional traffic between the local physical interfaces and the ZeroTier cloud:
+
+		``` yaml
+		environment:
+		- ZEROTIER_ONE_GATEWAY_MODE=both
+		```
+
+	Defaults to `inbound` if omitted. Note that you will probably need one or more static routes configured in your local LAN router so that traffic originating in a local host which is not running the ZeroTier client can be directed to the gateway host.
 	
 * `ZEROTIER_ONE_NETWORK_IDS` – a space-separated list of ZeroTier network IDs.
 
