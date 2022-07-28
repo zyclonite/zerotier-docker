@@ -12,6 +12,7 @@ on:
 
 env:
   IMAGE_NAME: zerotier
+  STORAGE_DRIVER: overlay
 
 jobs:
   build:
