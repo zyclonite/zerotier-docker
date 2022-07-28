@@ -1,4 +1,4 @@
-name: Bridge Mode build
+name: Router Mode build
 on:
   workflow_call:
     inputs:
@@ -43,11 +43,11 @@ jobs:
 
       - name: Build unstable image
         if: ${{ inputs.event == 'push' }}
-        run: buildah bud --platform ${{ matrix.platform.name }} --build-arg FROM_IMAGE=${{ format('ghcr.io/zyclonite/{0}', env.IMAGE_NAME) }} --build-arg FROM_VERSION=main -f ./Dockerfile.bridge -t ${{ env.IMAGE_NAME }}:${{ matrix.platform.tag }} .
+        run: buildah bud --platform ${{ matrix.platform.name }} --build-arg FROM_IMAGE=${{ format('ghcr.io/zyclonite/{0}', env.IMAGE_NAME) }} --build-arg FROM_VERSION=main -f ./Dockerfile.router -t ${{ env.IMAGE_NAME }}:${{ matrix.platform.tag }} .
 
       - name: Build stable image
         if: ${{ inputs.event == 'release' }}
-        run: buildah bud --platform ${{ matrix.platform.name }} --build-arg FROM_IMAGE=${{ format('ghcr.io/zyclonite/{0}', env.IMAGE_NAME) }} --build-arg FROM_VERSION=${{ inputs.tag }} -f ./Dockerfile.bridge -t ${{ env.IMAGE_NAME }}:${{ matrix.platform.tag }} .
+        run: buildah bud --platform ${{ matrix.platform.name }} --build-arg FROM_IMAGE=${{ format('ghcr.io/zyclonite/{0}', env.IMAGE_NAME) }} --build-arg FROM_VERSION=${{ inputs.tag }} -f ./Dockerfile.router -t ${{ env.IMAGE_NAME }}:${{ matrix.platform.tag }} .
 
       - name: Check images created
         run: buildah images | grep '${{ env.IMAGE_NAME }}'
@@ -98,16 +98,16 @@ jobs:
       - name: Push unstable images
         if: ${{ inputs.event == 'push' }}
         run: |
-          buildah manifest push --all --format v2s2 --creds zyclonite:${{ secrets.REGISTRY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://docker.io/zyclonite/${{ env.IMAGE_NAME }}:bridge-main
-          buildah manifest push --all --creds zyclonite:${{ secrets.QUAY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://quay.io/zyclonite/${{ env.IMAGE_NAME }}:bridge-main
-          buildah manifest push --all --creds zyclonite:${{ secrets.GITHUB_TOKEN }} ${{ env.IMAGE_NAME }}:latest docker://ghcr.io/zyclonite/${{ env.IMAGE_NAME }}:bridge-main
+          buildah manifest push --all --format v2s2 --creds zyclonite:${{ secrets.REGISTRY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://docker.io/zyclonite/${{ env.IMAGE_NAME }}:router-main
+          buildah manifest push --all --creds zyclonite:${{ secrets.QUAY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://quay.io/zyclonite/${{ env.IMAGE_NAME }}:router-main
+          buildah manifest push --all --creds zyclonite:${{ secrets.GITHUB_TOKEN }} ${{ env.IMAGE_NAME }}:latest docker://ghcr.io/zyclonite/${{ env.IMAGE_NAME }}:router-main
 
       - name: Push stable images
         if: ${{ inputs.event == 'release' }}
         run: |
-          buildah manifest push --all --format v2s2 --creds zyclonite:${{ secrets.REGISTRY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://docker.io/zyclonite/${{ env.IMAGE_NAME }}:bridge
-          buildah manifest push --all --format v2s2 --creds zyclonite:${{ secrets.REGISTRY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://docker.io/zyclonite/${{ env.IMAGE_NAME }}:bridge-${{ github.event.release.tag_name }}
-          buildah manifest push --all --creds zyclonite:${{ secrets.QUAY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://quay.io/zyclonite/${{ env.IMAGE_NAME }}:bridge
-          buildah manifest push --all --creds zyclonite:${{ secrets.QUAY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://quay.io/zyclonite/${{ env.IMAGE_NAME }}:bridge-${{ github.event.release.tag_name }}
-          buildah manifest push --all --creds zyclonite:${{ secrets.GITHUB_TOKEN }} ${{ env.IMAGE_NAME }}:latest docker://ghcr.io/zyclonite/${{ env.IMAGE_NAME }}:bridge
-          buildah manifest push --all --creds zyclonite:${{ secrets.GITHUB_TOKEN }} ${{ env.IMAGE_NAME }}:latest docker://ghcr.io/zyclonite/${{ env.IMAGE_NAME }}:bridge-${{ github.event.release.tag_name }}
+          buildah manifest push --all --format v2s2 --creds zyclonite:${{ secrets.REGISTRY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://docker.io/zyclonite/${{ env.IMAGE_NAME }}:router
+          buildah manifest push --all --format v2s2 --creds zyclonite:${{ secrets.REGISTRY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://docker.io/zyclonite/${{ env.IMAGE_NAME }}:router-${{ github.event.release.tag_name }}
+          buildah manifest push --all --creds zyclonite:${{ secrets.QUAY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://quay.io/zyclonite/${{ env.IMAGE_NAME }}:router
+          buildah manifest push --all --creds zyclonite:${{ secrets.QUAY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://quay.io/zyclonite/${{ env.IMAGE_NAME }}:router-${{ github.event.release.tag_name }}
+          buildah manifest push --all --creds zyclonite:${{ secrets.GITHUB_TOKEN }} ${{ env.IMAGE_NAME }}:latest docker://ghcr.io/zyclonite/${{ env.IMAGE_NAME }}:router
+          buildah manifest push --all --creds zyclonite:${{ secrets.GITHUB_TOKEN }} ${{ env.IMAGE_NAME }}:latest docker://ghcr.io/zyclonite/${{ env.IMAGE_NAME }}:router-${{ github.event.release.tag_name }}

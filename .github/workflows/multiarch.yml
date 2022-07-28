@@ -103,8 +103,8 @@ jobs:
           buildah manifest push --all --creds zyclonite:${{ secrets.GITHUB_TOKEN }} ${{ env.IMAGE_NAME }}:latest docker://ghcr.io/zyclonite/${{ env.IMAGE_NAME }}:latest
           buildah manifest push --all --creds zyclonite:${{ secrets.GITHUB_TOKEN }} ${{ env.IMAGE_NAME }}:latest docker://ghcr.io/zyclonite/${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}
 
-  bridge:
-    uses: ./.github/workflows/bridge.yml
+  router:
+    uses: ./.github/workflows/router.yml
     needs: push
     with:
       tag: ${{ github.event.release.tag_name }}

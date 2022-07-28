@@ -32,14 +32,11 @@ or create an empty file with the network as name
 
     /var/lib/zerotier-one/networks.d/8056c2e21c000001.conf
 
-#### Bridge mode
-It is the implementation of the local network bridge [paper](https://zerotier.atlassian.net/wiki/spaces/SD/pages/193134593/Bridge+your+ZeroTier+and+local+network+with+a+RaspberryPi)
+#### Router mode
 
-    docker run --name zerotier-one --device=/dev/net/tun \
-      --cap-add=NET_ADMIN --cap-add=NET_RAW --cap-add=SYS_ADMIN \
-      -v /var/lib/zerotier-one:/var/lib/zerotier-one zyclonite/zerotier:bridge
+A variation on the container which implements a local network router. See:
 
-That will start the zero-one, establish connection and build the bridge once the `zt` interface is up.
+* [router README](./README-router.md)
 
 #### Source
 
