@@ -1,7 +1,7 @@
 version: '3'
 services:
   zerotier:
-    image: "zyclonite/zerotier:router"
+    image: "zyclonite/zerotier:router-main"
     container_name: zerotier-one
     devices:
       - /dev/net/tun
