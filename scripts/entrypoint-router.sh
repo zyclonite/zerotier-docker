@@ -66,18 +66,18 @@ update_iptables() {
 			echo "$2 ${IPTABLES_CMD} rules for inbound traffic (ZeroTier to local interfaces ${PHY_IFACES})"
 			for PHY_IFACE in ${PHY_IFACES} ; do
 				${IPTABLES_CMD} -t nat -${1} POSTROUTING -o ${PHY_IFACE} -j MASQUERADE
-				${IPTABLES_CMD} -${1} FORWARD -i ${PHY_IFACE} -o ${ZT_IFACE} -j DROP
 				${IPTABLES_CMD} -${1} FORWARD -i ${PHY_IFACE} -o ${ZT_IFACE} -m state --state RELATED,ESTABLISHED -j ACCEPT
 				${IPTABLES_CMD} -${1} FORWARD -i ${ZT_IFACE} -o ${PHY_IFACE} -j ACCEPT
+				${IPTABLES_CMD} -${1} FORWARD -i ${PHY_IFACE} -o ${ZT_IFACE} -j DROP
 			done
 			;;
 		"outbound" )
 			echo "$2 ${IPTABLES_CMD} rules for outbound traffic (local interfaces ${PHY_IFACES} to ZeroTier)"
 			${IPTABLES_CMD} -t nat -${1} POSTROUTING -o ${ZT_IFACE} -j MASQUERADE
 			for PHY_IFACE in ${PHY_IFACES} ; do
-				${IPTABLES_CMD} -${1} FORWARD -i ${ZT_IFACE} -o ${PHY_IFACE} -j DROP
 				${IPTABLES_CMD} -${1} FORWARD -i ${ZT_IFACE} -o ${PHY_IFACE} -m state --state RELATED,ESTABLISHED -j ACCEPT
 				${IPTABLES_CMD} -${1} FORWARD -i ${PHY_IFACE} -o ${ZT_IFACE} -j ACCEPT
+				${IPTABLES_CMD} -${1} FORWARD -i ${ZT_IFACE} -o ${PHY_IFACE} -j DROP
 			done
 			;;
 		"both" )
