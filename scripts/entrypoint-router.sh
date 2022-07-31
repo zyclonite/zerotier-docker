@@ -68,6 +68,7 @@ update_iptables() {
 				${IPTABLES_CMD} -t nat -${1} POSTROUTING -o ${PHY_IFACE} -j MASQUERADE
 				${IPTABLES_CMD} -${1} FORWARD -i ${PHY_IFACE} -o ${ZT_IFACE} -m state --state RELATED,ESTABLISHED -j ACCEPT
 				${IPTABLES_CMD} -${1} FORWARD -i ${ZT_IFACE} -o ${PHY_IFACE} -j ACCEPT
+				${IPTABLES_CMD} -${1} FORWARD -i ${PHY_IFACE} -o ${ZT_IFACE} -j DROP
 			done
 			;;
 		"outbound" )
@@ -76,6 +77,7 @@ update_iptables() {
 			for PHY_IFACE in ${PHY_IFACES} ; do
 				${IPTABLES_CMD} -${1} FORWARD -i ${ZT_IFACE} -o ${PHY_IFACE} -m state --state RELATED,ESTABLISHED -j ACCEPT
 				${IPTABLES_CMD} -${1} FORWARD -i ${PHY_IFACE} -o ${ZT_IFACE} -j ACCEPT
+				${IPTABLES_CMD} -${1} FORWARD -i ${ZT_IFACE} -o ${PHY_IFACE} -j DROP
 			done
 			;;
 		"both" )
