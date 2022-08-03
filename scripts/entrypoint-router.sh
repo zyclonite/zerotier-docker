@@ -99,7 +99,8 @@ update_iptables() {
 update_iptables "A" "adding"
 
 # define where the ZeroTier daemon will write its output (if any)
-TAIL_PIPE=$(mktemp /tmp/zerotier-ipc-XXXXXX)
+TAIL_PIPE="/tmp/zerotier-ipc-log"
+cat /dev/null >"${TAIL_PIPE}"
 
 # start listening and echoing anything that appears there into this process
 tail -f "${TAIL_PIPE}" &
@@ -125,19 +126,11 @@ termination_handler() {
 	update_iptables "D" "removing"
 
 	# relay the termination message to the daemon
+	# (the pipe listener is cleaned up automatically)
 	if [ -d "/proc/${ZEROTIER_DAEMON_PID}" ] ; then
 		kill -TERM ${ZEROTIER_DAEMON_PID}
 		wait ${ZEROTIER_DAEMON_PID}
 	fi
-
-	# tell the pipe listener to go away too
-	if [ -d "/proc/${TAIL_PIPE_PID}" ] ; then
-		kill -TERM ${TAIL_PIPE_PID}
-		wait ${TAIL_PIPE_PID}
-	fi
-
-	# clean up the pipe file
-	rm "${TAIL_PIPE}"
 
 }
 
