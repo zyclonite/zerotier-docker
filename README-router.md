@@ -16,7 +16,7 @@ Technically, this could be described as a *half-router*:
 ``` console
 $ docker run --name zerotier-one --device=/dev/net/tun \
   --cap-add=NET_ADMIN --cap-add=NET_RAW --cap-add=SYS_ADMIN \
-  --env TZ=Etc/UTC --env PUID=999 -env PGID=994 \
+  --env TZ=Etc/UTC --env PUID=999 --env PGID=994 \
   --env ZEROTIER_ONE_LOCAL_PHYS=eth0 \
   --env ZEROTIER_ONE_USE_IPTABLES_NFT=false \
   --env ZEROTIER_ONE_GATEWAY_MODE=inbound \
