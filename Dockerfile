@@ -10,12 +10,15 @@ ARG ZT_COMMIT
 COPY patches /patches
 COPY scripts /scripts
 
+ENV PATH="/root/.cargo/bin:$PATH"
 RUN apk add --update alpine-sdk linux-headers openssl-dev \
+  && curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable \
+  && source "$HOME/.cargo/env" \
   && git clone --quiet https://github.com/zerotier/ZeroTierOne.git /src \
   && git -C src reset --quiet --hard ${ZT_COMMIT} \
   && cd /src \
-  && git apply /patches/* \
-  && make -f make-linux.mk
+  && git apply --ignore-space-change --ignore-whitespace /patches/* \
+  && make CDBG=-w -f make-linux.mk
 
 FROM ${ALPINE_IMAGE}:${ALPINE_VERSION}
 
