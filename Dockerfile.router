@@ -13,7 +13,7 @@ ENV LOG_PATH=/var/log/supervisor
 
 COPY scripts/entrypoint-router.sh /usr/sbin/
 
-RUN apk add --no-cache --purge --clean-protected iptables tzdata \
+RUN apk add --no-cache --purge --clean-protected iptables-legacy tzdata \
   && rm -rf /var/cache/apk/*
 
 EXPOSE 9993/udp
