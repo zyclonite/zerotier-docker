@@ -60,7 +60,7 @@ jobs:
         run: podman save -o /tmp/image.tar ${{ env.IMAGE_NAME }}:${{ matrix.platform.tag }}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: image-${{ matrix.platform.tag }}
           path: /tmp/image.tar
@@ -72,7 +72,7 @@ jobs:
     environment: production
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
 
       - name: Setup podman and buildah
         uses: zyclonite/setup-podman@v1
