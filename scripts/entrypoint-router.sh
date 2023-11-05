@@ -47,7 +47,7 @@ echo "$(date) - launching ZeroTier-One in routing mode"
 PHY_IFACES="${ZEROTIER_ONE_LOCAL_PHYS:-"eth0"}"
 
 # default to iptables (maintains backwards compatibility)
-IPTABLES_CMD=iptables
+IPTABLES_CMD=iptables-legacy
 # but support an override to use iptables-nft
 [ "${ZEROTIER_ONE_USE_IPTABLES_NFT}" = "true" ] && IPTABLES_CMD=iptables-nft
 
