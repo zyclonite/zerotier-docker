@@ -27,7 +27,9 @@ jobs:
           {name: "linux/arm64/v8", tag: "arm64v8"},
           {name: "linux/arm/v7", tag: "arm32v7"},
           {name: "linux/arm/v6", tag: "arm32v6"},
-          {name: "linux/riscv64", tag: "riscv64"}
+          {name: "linux/riscv64", tag: "riscv64"},
+          {name: "linux/ppc64le", tag: "ppc64le"},
+          {name: "linux/s390x", tag: "s390x"}
         ]
     steps:
       - name: Checkout zerotier-docker
@@ -76,6 +78,8 @@ jobs:
           podman load -i ./image-arm32v7/image.tar
           podman load -i ./image-arm32v6/image.tar
           podman load -i ./image-riscv64/image.tar
+          podman load -i ./image-ppc64le/image.tar
+          podman load -i ./image-s390x/image.tar
 
       - name: Create multi-arch manifest
         run: |
@@ -86,6 +90,8 @@ jobs:
           buildah manifest add --arch arm --variant v7 ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:arm32v7
           buildah manifest add --arch arm --variant v6 ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:arm32v6
           buildah manifest add --arch riscv64 ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:riscv64
+          buildah manifest add --arch ppc64le ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:ppc64le
+          buildah manifest add --arch s390x ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:s390x
 
       - name: Push unstable images
         if: ${{ github.event_name == 'push' }}
