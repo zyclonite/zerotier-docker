@@ -33,7 +33,7 @@ jobs:
         ]
     steps:
       - name: Checkout zerotier-docker
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install qemu dependency
         run: |
@@ -53,7 +53,7 @@ jobs:
         run: podman save -o /tmp/image.tar ${{ env.IMAGE_NAME }}:${{ matrix.platform.tag }}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: image-${{ matrix.platform.tag }}
           path: /tmp/image.tar
@@ -65,7 +65,7 @@ jobs:
     environment: production
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - name: Setup podman and buildah
         uses: zyclonite/setup-podman@v1
