@@ -96,15 +96,15 @@ jobs:
       - name: Push unstable images
         if: ${{ github.event_name == 'push' }}
         run: |
-          buildah manifest push --all --format v2s2 --creds zyclonite:${{ secrets.REGISTRY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://docker.io/zyclonite/${{ env.IMAGE_NAME }}:main
+          buildah manifest push --all --format v2s2 --creds zyclonite:${{ secrets.DOCKERHUB_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://docker.io/zyclonite/${{ env.IMAGE_NAME }}:main
           buildah manifest push --all --creds zyclonite:${{ secrets.QUAY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://quay.io/zyclonite/${{ env.IMAGE_NAME }}:main
           buildah manifest push --all --creds zyclonite:${{ secrets.GITHUB_TOKEN }} ${{ env.IMAGE_NAME }}:latest docker://ghcr.io/zyclonite/${{ env.IMAGE_NAME }}:main
 
       - name: Push stable images
         if: ${{ github.event_name == 'release' }}
         run: |
-          buildah manifest push --all --format v2s2 --creds zyclonite:${{ secrets.REGISTRY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://docker.io/zyclonite/${{ env.IMAGE_NAME }}:latest
-          buildah manifest push --all --format v2s2 --creds zyclonite:${{ secrets.REGISTRY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://docker.io/zyclonite/${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}
+          buildah manifest push --all --format v2s2 --creds zyclonite:${{ secrets.DOCKERHUB_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://docker.io/zyclonite/${{ env.IMAGE_NAME }}:latest
+          buildah manifest push --all --format v2s2 --creds zyclonite:${{ secrets.DOCKERHUB_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://docker.io/zyclonite/${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}
           buildah manifest push --all --creds zyclonite:${{ secrets.QUAY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://quay.io/zyclonite/${{ env.IMAGE_NAME }}:latest
           buildah manifest push --all --creds zyclonite:${{ secrets.QUAY_PASSWORD }} ${{ env.IMAGE_NAME }}:latest docker://quay.io/zyclonite/${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}
           buildah manifest push --all --creds zyclonite:${{ secrets.GITHUB_TOKEN }} ${{ env.IMAGE_NAME }}:latest docker://ghcr.io/zyclonite/${{ env.IMAGE_NAME }}:latest
@@ -117,5 +117,5 @@ jobs:
       tag: ${{ github.event.release.tag_name }}
       event: ${{ github.event_name }}
     secrets:
-      REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
       QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
