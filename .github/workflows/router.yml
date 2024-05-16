@@ -64,7 +64,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: image-${{ matrix.platform.tag }}
+          name: image-${{ matrix.platform.tag }}-router
           path: /tmp/image.tar
 
   push:
@@ -81,14 +81,14 @@ jobs:
 
       - name: Import images
         run: |
-          podman load -i ./image-amd64/image.tar
-          podman load -i ./image-i386/image.tar
-          podman load -i ./image-arm64v8/image.tar
-          podman load -i ./image-arm32v7/image.tar
-          podman load -i ./image-arm32v6/image.tar
-          podman load -i ./image-riscv64/image.tar
-          podman load -i ./image-ppc64le/image.tar
-          podman load -i ./image-s390x/image.tar
+          podman load -i ./image-amd64-router/image.tar
+          podman load -i ./image-i386-router/image.tar
+          podman load -i ./image-arm64v8-router/image.tar
+          podman load -i ./image-arm32v7-router/image.tar
+          podman load -i ./image-arm32v6-router/image.tar
+          podman load -i ./image-riscv64-router/image.tar
+          podman load -i ./image-ppc64le-router/image.tar
+          podman load -i ./image-s390x-router/image.tar
 
       - name: Create multi-arch manifest
         run: |
