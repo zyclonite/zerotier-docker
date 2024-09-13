@@ -1,5 +1,5 @@
 diff --git a/make-linux.mk b/make-linux.mk
-index bfa416aa0..9f10cf216 100644
+index efc1badf..34beff93 100644
 --- a/make-linux.mk
 +++ b/make-linux.mk
 @@ -292,6 +292,7 @@ ifeq ($(ZT_IA32),1)
