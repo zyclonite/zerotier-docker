@@ -42,61 +42,11 @@ fi
 
 echo "$(date) - launching ZeroTier-One in routing mode"
 
-# use an appropriate default for a local physical interface
-# (using eth0 maintains backwards compatibility)
-PHY_IFACES="${ZEROTIER_ONE_LOCAL_PHYS:-"eth0"}"
-
-# default to iptables (maintains backwards compatibility)
-IPTABLES_CMD=iptables-legacy
-# but support an override to use iptables-nft
-[ "${ZEROTIER_ONE_USE_IPTABLES_NFT}" = "true" ] && IPTABLES_CMD=iptables-nft
-
 # the default forwarding mode is inbound (backwards compatible)
 GATEWAY_MODE="${ZEROTIER_ONE_GATEWAY_MODE:-"inbound"}"
 
-# the wildcard for the local zerotier interface is
-ZT_IFACE="zt+"
-
-# function to add and remove the requisite rules
-# - $1 is either "A" (add) or "D" (delete)
-# - $2 is comment
-update_iptables() {
-	case "${GATEWAY_MODE}" in
-		"inbound" )
-			echo "$2 ${IPTABLES_CMD} rules for inbound traffic (ZeroTier to local interfaces ${PHY_IFACES})"
-			for PHY_IFACE in ${PHY_IFACES} ; do
-				${IPTABLES_CMD} -t nat -${1} POSTROUTING -o ${PHY_IFACE} -j MASQUERADE
-				${IPTABLES_CMD} -${1} FORWARD -i ${PHY_IFACE} -o ${ZT_IFACE} -m state --state RELATED,ESTABLISHED -j ACCEPT
-				${IPTABLES_CMD} -${1} FORWARD -i ${ZT_IFACE} -o ${PHY_IFACE} -j ACCEPT
-				${IPTABLES_CMD} -${1} FORWARD -i ${PHY_IFACE} -o ${ZT_IFACE} -j DROP
-			done
-			;;
-		"outbound" )
-			echo "$2 ${IPTABLES_CMD} rules for outbound traffic (local interfaces ${PHY_IFACES} to ZeroTier)"
-			${IPTABLES_CMD} -t nat -${1} POSTROUTING -o ${ZT_IFACE} -j MASQUERADE
-			for PHY_IFACE in ${PHY_IFACES} ; do
-				${IPTABLES_CMD} -${1} FORWARD -i ${ZT_IFACE} -o ${PHY_IFACE} -m state --state RELATED,ESTABLISHED -j ACCEPT
-				${IPTABLES_CMD} -${1} FORWARD -i ${PHY_IFACE} -o ${ZT_IFACE} -j ACCEPT
-				${IPTABLES_CMD} -${1} FORWARD -i ${ZT_IFACE} -o ${PHY_IFACE} -j DROP
-			done
-			;;
-		"both" )
-			echo "$2 ${IPTABLES_CMD} rules for bi-directional traffic (local interfaces ${PHY_IFACES} to/from ZeroTier)"
-			${IPTABLES_CMD} -t nat -${1} POSTROUTING -o ${ZT_IFACE} -j MASQUERADE
-			for PHY_IFACE in ${PHY_IFACES} ; do
-				${IPTABLES_CMD} -t nat -${1} POSTROUTING -o ${PHY_IFACE} -j MASQUERADE
-				${IPTABLES_CMD} -${1} FORWARD -i ${ZT_IFACE} -o ${PHY_IFACE} -j ACCEPT
-				${IPTABLES_CMD} -${1} FORWARD -i ${PHY_IFACE} -o ${ZT_IFACE} -j ACCEPT
-			done
-			;;
-		* )
-			echo "Warning: ZEROTIER_ONE_GATEWAY_MODE=${GATEWAY_MODE} is not supported - ignored"
-			;;
-	esac
-}
-
 # add rules to set up NAT-routing
-update_iptables "A" "adding"
+gatewaymode "${GATEWAY_MODE}"
 
 # define where the ZeroTier daemon will write its output (if any)
 TAIL_PIPE="/tmp/zerotier-ipc-log"
@@ -123,7 +73,7 @@ termination_handler() {
 	echo "$(date) - terminating ZeroTier-One"
 
 	# remove rules
-	update_iptables "D" "removing"
+	gatewaymode disable
 
 	# relay the termination message to the daemon
 	# (the pipe listener is cleaned up automatically)
