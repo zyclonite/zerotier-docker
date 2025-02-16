@@ -12,12 +12,11 @@ on:
 
 env:
   IMAGE_NAME: zerotier
-  STORAGE_DRIVER: overlay
 
 jobs:
   build:
     name: Build images
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -60,15 +59,12 @@ jobs:
 
   push:
     name: Publish images
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: build
     environment: production
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v4
-
-      - name: Setup podman and buildah
-        uses: zyclonite/setup-podman@v1
 
       - name: Import images
         run: |
