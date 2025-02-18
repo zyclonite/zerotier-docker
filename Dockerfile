@@ -27,7 +27,9 @@ LABEL org.opencontainers.image.title="zerotier" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.source="https://github.com/zyclonite/zerotier-docker"
 
-COPY --from=builder /src/zerotier-one /scripts/entrypoint.sh /usr/sbin/
+COPY --from=builder /src/zerotier-one /scripts/entrypoint.sh /scripts/healthcheck.sh /usr/sbin/
+
+RUN chmod +x /usr/sbin/healthcheck.sh
 
 RUN apk add --no-cache --purge --clean-protected libc6-compat libstdc++ \
   && mkdir -p /var/lib/zerotier-one \
@@ -40,3 +42,6 @@ EXPOSE 9993/udp
 ENTRYPOINT ["entrypoint.sh"]
 
 CMD ["-U"]
+
+HEALTHCHECK --interval=60s --timeout=8s --retries=2 --start-period=60s --start-interval=3s \
+  CMD ["/bin/sh", "/usr/sbin/healthcheck.sh"]
