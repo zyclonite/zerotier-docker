@@ -7,27 +7,27 @@
 # 1= Failure
 
 #Environment Variables
-# ZT_SPECIFIC_NETWORK= <Enter 1 Specific Network for Checking; ZT_MIN_ROUTES_FOR_HEALTH is ignored if this is used.>
-# ZT_MIN_ROUTES_FOR_HEALTH= <Should be a Number greater than 0>
+# CHK_ZT_SPECIFIC_NETWORK=          <Enter 1 Specific Network for Checking; CHK_ZT_MIN_ROUTES_FOR_HEALTH is ignored if this is used.>
+# CHK_ZT_MIN_ROUTES_FOR_HEALTH=     <Should be a Number greater than 0>
 
 # Check if Specific Network is specified
-if [[ -n "${ZT_SPECIFIC_NETWORK}" ]] ; then
+if [[ -n "${CHK_ZT_SPECIFIC_NETWORK}" ]] ; then
     #If Network is OK, continue, else exit
-    [[ "$(zerotier-cli get ${ZT_SPECIFIC_NETWORK} status)" = "OK" ]] || exit 1
-    #echo "${ZT_SPECIFIC_NETWORK} Connected."
+    [[ "$(zerotier-cli get ${CHK_ZT_SPECIFIC_NETWORK} status)" = "OK" ]] || exit 1
+    #echo "${CHK_ZT_SPECIFIC_NETWORK} Connected."
     exit 0
 # Check for Minimum Networks
-elif [[ -n "${ZT_MIN_ROUTES_FOR_HEALTH}" ]] ; then 
+elif [[ -n "${CHK_ZT_MIN_ROUTES_FOR_HEALTH}" ]] ; then 
     # Validate the MIN value for Health Checks
-    ZT_MIN_ROUTES_FOR_HEALTH=$(( ${ZT_MIN_ROUTES_FOR_HEALTH} < 1 ? 1 : ${ZT_MIN_ROUTES_FOR_HEALTH} ))
-    #echo "No. Of Networks to Check: ${ZT_MIN_ROUTES_FOR_HEALTH}"
+    CHK_ZT_MIN_ROUTES_FOR_HEALTH=$(( ${CHK_ZT_MIN_ROUTES_FOR_HEALTH} < 1 ? 1 : ${CHK_ZT_MIN_ROUTES_FOR_HEALTH} ))
+    #echo "No. Of Networks to Check: ${CHK_ZT_MIN_ROUTES_FOR_HEALTH}"
     network_count=0
     #Get List of Joined networks
     joined_networks=$(zerotier-cli listnetworks | awk 'NR>1 {print$3}')
     for network in $joined_networks; do
         if [[ "$(zerotier-cli get ${network} status)" = "OK" ]] ; then
             network_count=$(expr $network_count + 1)
-            if [[ ${network_count} -ge ${ZT_MIN_ROUTES_FOR_HEALTH} ]] ; then
+            if [[ ${network_count} -ge ${CHK_ZT_MIN_ROUTES_FOR_HEALTH} ]] ; then
                 #echo "${network_count} Networks Connected. Exit Success"
                 exit 0
             fi
