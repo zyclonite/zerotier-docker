@@ -32,6 +32,27 @@ or create an empty file with the network as name
 
     /var/lib/zerotier-one/networks.d/8056c2e21c000001.conf
 
+#### Health Checks
+
+Environment Variable Options:
+
+   1. Check For Specific Network:
+
+    
+    CHK_ZT_SPECIFIC_NETWORK=[Enter 1 Specific Network for Checking; CHK_ZT_MIN_ROUTES_FOR_HEALTH is ignored if this is used.]
+      
+   
+   2. Check for Minimum number of Connections:
+
+
+    CHK_ZT_MIN_ROUTES_FOR_HEALTH=[Should be a Number greater than 0; Ignored if CHK_ZT_SPECIFIC_NETWORK is used.]
+
+    
+   3. Check for ALL Networks to be connected:
+     This is default mode when no Environment variable is defined.
+
+
+
 #### Router mode
 
 A variation on the container which implements a local network router. See:
