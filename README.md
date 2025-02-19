@@ -36,10 +36,10 @@ or create an empty file with the network as name
 
 Environment Variable Options:
 
-   1. Check For Specific Network:
+   1. Check For Specific Networks:
 
     
-    CHK_ZT_SPECIFIC_NETWORK=[Enter 1 Specific Network for Checking; CHK_ZT_MIN_ROUTES_FOR_HEALTH is ignored if this is used.]
+    CHK_ZT_SPECIFIC_NETWORKS=[Enter Specific Networks for checking with a space between each network; ALL Networks mentioned here would be checked; CHK_ZT_MIN_ROUTES_FOR_HEALTH is ignored if this is used.]
       
    
    2. Check for Minimum number of Connections:

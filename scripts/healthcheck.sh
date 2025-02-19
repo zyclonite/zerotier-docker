@@ -1,5 +1,4 @@
 #This health-check script is sponsored by PMGA TECH LLP
-#The above line is a part of license to use this code. Removal of line shall be deemed as revoking of usage rights.
 #!/bin/sh
 
 #Exit Codes
@@ -7,14 +6,16 @@
 # 1= Failure
 
 #Environment Variables
-# CHK_ZT_SPECIFIC_NETWORK=          <Enter 1 Specific Network for Checking; CHK_ZT_MIN_ROUTES_FOR_HEALTH is ignored if this is used.>
+# CHK_ZT_SPECIFIC_NETWORKS=         <Enter Networks to check with space in between each entry; All networks entered here would be matched; CHK_ZT_MIN_ROUTES_FOR_HEALTH is ignored if this is used.>
 # CHK_ZT_MIN_ROUTES_FOR_HEALTH=     <Should be a Number greater than 0>
 
-# Check if Specific Network is specified
-if [[ -n "${CHK_ZT_SPECIFIC_NETWORK}" ]] ; then
-    #If Network is OK, continue, else exit
-    [[ "$(zerotier-cli get ${CHK_ZT_SPECIFIC_NETWORK} status)" = "OK" ]] || exit 1
-    #echo "${CHK_ZT_SPECIFIC_NETWORK} Connected."
+# Check if specified Networks are all Connected
+if [[ -n "${CHK_ZT_SPECIFIC_NETWORKS}" ]] ; then
+    for network in $CHK_ZT_SPECIFIC_NETWORKS; do
+        #If Network is OK, continue, else exit
+        [[ "$(zerotier-cli get ${network} status)" = "OK" ]] || exit 1
+        #echo "${CHK_ZT_SPECIFIC_NETWORKS} Connected."
+    done
     exit 0
 # Check for Minimum Networks
 elif [[ -n "${CHK_ZT_MIN_ROUTES_FOR_HEALTH}" ]] ; then 
