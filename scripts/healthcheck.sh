@@ -41,7 +41,7 @@ else
     #echo "Checking All Networks"
     joined_networks=$(zerotier-cli listnetworks | awk 'NR>1 {print$3}')
     #If there are no Networks, exit Failure
-    [[ -n ${joined_networks} ]] || exit 1
+    [[ -n "${joined_networks}" ]] || exit 1
     for network in $joined_networks; do
         [[ "$(zerotier-cli get ${network} status)" = "OK" ]] || exit 1
         #echo "$network Connected."
