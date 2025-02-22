@@ -6,29 +6,29 @@
 # 1= Failure
 
 #Environment Variables
-# CHK_ZT_SPECIFIC_NETWORKS=         <Enter Networks to check with space in between each entry; All networks entered here would be matched; CHK_ZT_MIN_ROUTES_FOR_HEALTH is ignored if this is used.>
-# CHK_ZT_MIN_ROUTES_FOR_HEALTH=     <Should be a Number greater than 0>
+# ZT_CHK_SPECIFIC_NETWORKS=         <Enter Networks to check with space in between each entry; All networks entered here would be matched; ZT_CHK_MIN_ROUTES_FOR_HEALTH is ignored if this is used.>
+# ZT_CHK_MIN_ROUTES_FOR_HEALTH=     <Should be a Number greater than 0>
 
 # Check if specified Networks are all Connected
-if [[ -n "${CHK_ZT_SPECIFIC_NETWORKS}" ]] ; then
-    for network in $CHK_ZT_SPECIFIC_NETWORKS; do
+if [[ -n "${ZT_CHK_SPECIFIC_NETWORKS}" ]] ; then
+    for network in $ZT_CHK_SPECIFIC_NETWORKS; do
         #If Network is OK, continue, else exit
         [[ "$(zerotier-cli get ${network} status)" = "OK" ]] || exit 1
-        #echo "${CHK_ZT_SPECIFIC_NETWORKS} Connected."
+        #echo "${ZT_CHK_SPECIFIC_NETWORKS} Connected."
     done
     exit 0
 # Check for Minimum Networks
-elif [[ -n "${CHK_ZT_MIN_ROUTES_FOR_HEALTH}" ]] ; then 
+elif [[ -n "${ZT_CHK_MIN_ROUTES_FOR_HEALTH}" ]] ; then 
     # Validate the MIN value for Health Checks
-    CHK_ZT_MIN_ROUTES_FOR_HEALTH=$(( ${CHK_ZT_MIN_ROUTES_FOR_HEALTH} < 1 ? 1 : ${CHK_ZT_MIN_ROUTES_FOR_HEALTH} ))
-    #echo "No. Of Networks to Check: ${CHK_ZT_MIN_ROUTES_FOR_HEALTH}"
+    ZT_CHK_MIN_ROUTES_FOR_HEALTH=$(( ${ZT_CHK_MIN_ROUTES_FOR_HEALTH} < 1 ? 1 : ${ZT_CHK_MIN_ROUTES_FOR_HEALTH} ))
+    #echo "No. Of Networks to Check: ${ZT_CHK_MIN_ROUTES_FOR_HEALTH}"
     network_count=0
     #Get List of Joined networks
     joined_networks=$(zerotier-cli listnetworks | awk 'NR>1 {print$3}')
     for network in $joined_networks; do
         if [[ "$(zerotier-cli get ${network} status)" = "OK" ]] ; then
             network_count=$(expr $network_count + 1)
-            if [[ ${network_count} -ge ${CHK_ZT_MIN_ROUTES_FOR_HEALTH} ]] ; then
+            if [[ ${network_count} -ge ${ZT_CHK_MIN_ROUTES_FOR_HEALTH} ]] ; then
                 #echo "${network_count} Networks Connected. Exit Success"
                 exit 0
             fi

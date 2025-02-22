@@ -32,21 +32,33 @@ or create an empty file with the network as name
 
     /var/lib/zerotier-one/networks.d/8056c2e21c000001.conf
 
+#### Auto-Join Networks
+
+Define: 
+
+```
+ZT_NETWORK_IDS= [Network IDs with Space in between each ID]
+```
+
+
+The container will JOIN ALL the Networks mentioned in this variable and LEAVE ANY OTHER Network NOT defined in this variable.
+
+
 #### Health Checks
 
 Environment Variable Options:
 
    1. Check For Specific Networks:
 
-    
-    CHK_ZT_SPECIFIC_NETWORKS=[Enter Specific Networks for checking with a space between each network; ALL Networks mentioned here would be checked; CHK_ZT_MIN_ROUTES_FOR_HEALTH is ignored if this is used.]
-      
+        ```
+        ZT_CHK_SPECIFIC_NETWORKS=[Enter Specific Networks for checking with a space between each network; ALL Networks mentioned here would be checked; ZT_CHK_MIN_ROUTES_FOR_HEALTH is ignored if this is used.]
+        ```
    
    2. Check for Minimum number of Connections:
 
-
-    CHK_ZT_MIN_ROUTES_FOR_HEALTH=[Should be a Number greater than 0; Ignored if CHK_ZT_SPECIFIC_NETWORK is used.]
-
+        ```
+        ZT_CHK_MIN_ROUTES_FOR_HEALTH=[Should be a Number greater than 0; Ignored if CHK_ZT_SPECIFIC_NETWORK is used.]
+        ```
     
    3. Check for ALL Networks to be connected:
      This is default mode when no Environment variable is defined.
