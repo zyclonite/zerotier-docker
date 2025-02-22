@@ -11,3 +11,9 @@ services:
     cap_add:
       - NET_ADMIN
       - SYS_ADMIN
+    #environment:
+      #Variables For AutoJoin
+      #- ZT_NETWORK_IDS
+      #Variables for Health-Check
+      #- ZT_CHK_SPECIFIC_NETWORKS
+      #- ZT_CHK_MIN_ROUTES_FOR_HEALTH
