@@ -13,8 +13,21 @@
 if [[ -n "${ZT_CHK_SPECIFIC_NETWORKS}" ]] ; then
     for network in $ZT_CHK_SPECIFIC_NETWORKS; do
         #If Network is OK, continue, else exit
-        [[ "$(zerotier-cli get ${network} status)" = "OK" ]] || exit 1
-        #echo "${ZT_CHK_SPECIFIC_NETWORKS} Connected."
+        if [[ "$(zerotier-cli get ${network} status)" = "OK" ]]; then
+            #Check for Routes
+            interface=$(zerotier-cli get ${network} portDeviceName)
+            routes=$(ip r | grep "dev ${interface}" | grep -cv "via")
+            #Exit if No routes
+            if [[ ${routes} -lt 1 ]]; then 
+                exit 1
+            else
+                continue
+                #echo "${network} Connected."
+            fi
+        #Network Status Not = OK
+        else
+            exit 1
+        fi
     done
     exit 0
 # Check for Minimum Networks
@@ -27,7 +40,15 @@ elif [[ -n "${ZT_CHK_MIN_ROUTES_FOR_HEALTH}" ]] ; then
     joined_networks=$(zerotier-cli listnetworks | awk 'NR>1 {print$3}')
     for network in $joined_networks; do
         if [[ "$(zerotier-cli get ${network} status)" = "OK" ]] ; then
-            network_count=$(expr $network_count + 1)
+            #Check for Routes
+            interface=$(zerotier-cli get ${network} portDeviceName)
+            routes=$(ip r | grep "dev ${interface}" | grep -cv "via")
+            if [[ ${routes} -lt 1 ]]; then 
+                exit 1
+            else
+                network_count=$(expr $network_count + 1)
+                #echo "${network} Connected."
+            fi
             if [[ ${network_count} -ge ${ZT_CHK_MIN_ROUTES_FOR_HEALTH} ]] ; then
                 #echo "${network_count} Networks Connected. Exit Success"
                 exit 0
@@ -43,7 +64,18 @@ else
     #If there are no Networks, exit Failure
     [[ -n "${joined_networks}" ]] || exit 1
     for network in $joined_networks; do
-        [[ "$(zerotier-cli get ${network} status)" = "OK" ]] || exit 1
-        #echo "$network Connected."
+        #[[ "$(zerotier-cli get ${network} status)" = "OK" ]] || exit 1
+        if [[ "$(zerotier-cli get ${network} status)" = "OK" ]]; then
+            #Check for Routes
+            interface=$(zerotier-cli get ${network} portDeviceName)
+            routes=$(ip r | grep "dev ${interface}" | grep -cv "via")
+            #Exit if No routes
+            if [[ ${routes} -lt 1 ]]; then 
+                exit 1
+            else
+                continue
+                #echo "${network} Connected."
+            fi
+        fi
     done
 fi
