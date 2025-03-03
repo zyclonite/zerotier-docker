@@ -17,6 +17,25 @@ This implementation extends the concept so that you have a choice of:
 * Permitting clients on your LAN to initiate connections with remote devices reachable across your ZeroTier Cloud network; or
 * Both of the above (ie a full router).
 
+### router vs client
+
+Both containers run the **same** [ZeroTier One client](https://github.com/zerotier/ZeroTierOne) software. No special parameters are passed to the ZeroTier One client that somehow cause it to become a router.
+
+Layer Three routing is simply the process of the *host* (not the *container*) making decisions about forwarding IP datagrams (aka "packets") between network interfaces. Routing is enabled by two things:
+
+1. Turning on the `net.ipv4.ip_forward` kernel parameter; and
+2. A set of *iptables* filters.
+
+The ZeroTier router container manages the insertion and withdrawal of the necessary *iptables* filters.
+
+The kernel parameter is usually enabled when Docker is installed. However, if IPv4 forwarding is not enabled when the Zerotier router container launches, it reports this problem in the container's log and falls back to behaving as the client. In that situation, you may need to enable the kernel parameter yourself:
+
+```
+$ sudo sysctl net.ipv4.ip_forward=1
+```
+
+Otherwise, the client and router containers are fully interchangeable and can utilise the same persistent store.
+
 ### Command line example
 
 ``` console
@@ -64,9 +83,11 @@ services:
       - PUID=999
       - PGID=994
       - ZEROTIER_ONE_LOCAL_PHYS=eth0
-      - ZEROTIER_ONE_USE_IPTABLES_NFT=true
+      - ZEROTIER_ONE_USE_IPTABLES_NFT=false
       - ZEROTIER_ONE_GATEWAY_MODE=inbound
     # - ZEROTIER_ONE_NETWORK_IDS=«yourDefaultNetworkID(s)»
+    # - ZEROTIER_ONE_CHK_SPECIFIC_NETWORKS=«yourNetworkID(s)toCheck»
+    # - ZEROTIER_ONE_CHK_MIN_ROUTES_FOR_HEALTH=1
 ```
 
 Note:
@@ -80,26 +101,9 @@ Note:
 
 ### Environment variables
 
-* `TZ` – timezone support. Example:
+All the variables supported by the client container are also supported by the router container. Please see the main [README](./README.md).
 
-	``` yaml
-	environment:
-	- TZ=Australia/Sydney
-	```
-
-	Defaults to `Etc/UTC` if omitted.
-
-* `PUID` + `PGID` – user and group IDs for ownership of persistent store. Example:
-
-	``` yaml
-	environment:
-	- PUID=1000
-	- PGID=1000
-	```
-
-	If omitted, `PUID` defaults to user ID 999, while `PGID` defaults to group ID 994.
-
-	These variables are only used to ensure consistent ownership of persistent storage on each launch. They do not affect how the container *runs.* Absent a `user:` directive, the container runs as root and does not downgrade its privileges.
+The variables listed below are unique to the router container:
 
 * `ZEROTIER_ONE_LOCAL_PHYS` - a space-separated list of physical interfaces that should be configured to participate in NAT-based routing. Examples:
 
@@ -153,7 +157,7 @@ Note:
 	2. A line-count of zero. This means the container has not been able to configure net-filter rules on the host. If that happens, try the opposite setting for this environment variable (eg `true` instead of `false`).
 	3. A non-zero line-count. That means the container has been able to propagate net-filter rules into the host's tables, which is what you want. The actual number is not important, just something other than zero.
 
-	The container will always come up. Once you've authorised the client in ZeroTier Central, it will be able to join your ZeroTier Cloud network. Tests like `ping` and `traceroute` that you run on the same host will always work. However, if the container is not able to propagate its net-filter rules into the host's tables, traffic *beyond* the host where the container is running will not work properly. The problem is quite subtle so it's always a good idea to check that the host has the expected net-filters.
+	The container will always come up. Once you've approved the host in ZeroTier Central, it will be able to join your ZeroTier Cloud network. Tests like `ping` and `traceroute` that you run on the same host will always work. However, if the container is not able to propagate its net-filter rules into the host's tables, traffic *beyond* the host where the container is running will not work properly. The problem is quite subtle so it's always a good idea to check that the host has the expected net-filters.
 
 * `ZEROTIER_ONE_GATEWAY_MODE` - controls the traffic direction. Examples:
 
@@ -179,39 +183,6 @@ Note:
 		```
 
 	Defaults to `inbound` if omitted. Note that you will probably need one or more static routes configured in your local LAN router so that traffic originating in a local host which is not running the ZeroTier client can be directed to the gateway host.
-
-* `ZEROTIER_ONE_NETWORK_IDS` – a space-separated list of ZeroTier network IDs.
-
-	This variable is *only* effective on first launch. There is no default if it is omitted. Examples:
-
-	- to join a single network:
-
-		``` yaml
-		environment:
-		- ZEROTIER_ONE_NETWORK_IDS=aaaaaaaaaaaaaaaa
-		```
-
-		Equivalent of running the following command after the container first starts:
-
-		```
-		$ docker exec zerotier zerotier-cli join aaaaaaaaaaaaaaaa
-		```
-
-	- to join a multiple networks:
-
-		``` yaml
-		environment:
-		- ZEROTIER_ONE_NETWORK_IDS=aaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbb
-		```
-
-		Equivalent of running the following commands after the container first starts:
-
-		```
-		$ docker exec zerotier zerotier-cli join aaaaaaaaaaaaaaaa
-		$ docker exec zerotier zerotier-cli join bbbbbbbbbbbbbbbb
-		```
-
-	It does not matter whether you use this environment variable or the `join` command, you still need to use ZeroTier Central to approve the computer for each network it joins.
 
 ### Managed route(s)
 
