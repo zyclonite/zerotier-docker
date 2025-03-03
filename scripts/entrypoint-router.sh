@@ -11,15 +11,21 @@ NETWORKS_DIR="${CONFIG_DIR}/networks.d"
 
 # set up network auto-join if (a) the networks directory does not exist
 # and (b) the ZEROTIER_ONE_NETWORK_IDS environment variable is non-null.
-if [ ! -d "${NETWORKS_DIR}" -a -n "${ZEROTIER_ONE_NETWORK_IDS}" ] ; then
-	echo "Assuming container first run."
-	mkdir -p "${NETWORKS_DIR}"
-	for NETWORK_ID in ${ZEROTIER_ONE_NETWORK_IDS} ; do
-		echo "Configuring auto-join of network ID: ${NETWORK_ID}"
-		touch "${NETWORKS_DIR}/${NETWORK_ID}.conf"
-		echo "You will need to authorize this host at:"
-		echo "   https://my.zerotier.com/network/${NETWORK_ID}"
-	done
+if [ ! -d "${NETWORKS_DIR}" ] ; then
+	echo "$(date) - assuming container first run."
+	if [ -n "${ZEROTIER_ONE_NETWORK_IDS}" ] ; then
+		mkdir -p "${NETWORKS_DIR}"
+		for NETWORK_ID in ${ZEROTIER_ONE_NETWORK_IDS} ; do
+			echo "  Configuring auto-join of network ID: ${NETWORK_ID}"
+			touch "${NETWORKS_DIR}/${NETWORK_ID}.conf"
+			echo "  You will need to authorize this host at:"
+			echo "     https://my.zerotier.com/network/${NETWORK_ID}"
+		done
+	else
+		echo " ZEROTIER_ONE_NETWORK_IDS not set. You will need to join"
+		echo " networks using zerotier-cli, and then approve this"
+		echo " host in ZeroTier Central."
+	fi
 fi
 
 # make sure permissions are always as expected (self-repair)
