@@ -1,7 +1,7 @@
 #!/bin/sh
 #This health-check script is sponsored by PMGA TECH LLP
 #Licensing Terms:
-#This code is free to use, ditribute, use as a derivative for another code or do any such activity as allowed by M.I.T License as long as the recognition stays intact.
+#This code is free to use, distribute, use as a derivative for another code or do any such activity as allowed by M.I.T License as long as the recognition stays intact.
 #The recognition may be moved to the CONTRIBUTERS.md file in case the same is being maintained in the projects in which the code is being used.
 #Removing the recognition text shall construe revocation of usage rights and thus would be deemed as a copyright infringement.
 #The intent of this license is ONLY to give due recognition to the contributers and there is no other intent whatsoever.
