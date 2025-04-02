@@ -1,13 +1,29 @@
 #!/bin/sh
-#This health-check script is sponsored by PMGA TECH LLP
-#Licensing Terms:
-#This code is free to use, distribute, use as a derivative for another code or do any such activity as allowed by M.I.T License as long as the recognition stays intact.
-#The recognition may be moved to the CONTRIBUTERS.md file in case the same is being maintained in the projects in which the code is being used.
-#Removing the recognition text shall construe revocation of usage rights and thus would be deemed as a copyright infringement.
-#The intent of this license is ONLY to give due recognition to the contributers and there is no other intent whatsoever.
-# Contributers:
+#MIT License
+#
+#Copyright (c) PMGA Tech LLP
+#
+#Contributers:
 # PMGA Tech LLP
 # gb-123-git
+#
+#Permission is hereby granted, free of charge, to any person obtaining a copy
+#of this software and associated documentation files (the "Software"), to deal
+#in the Software without restriction, including without limitation the rights
+#to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#copies of the Software, and to permit persons to whom the Software is
+#furnished to do so, subject to the following conditions:
+#
+#The above copyright notice and this permission notice alongwith the following
+#paragraph shall be included in all copies or substantial portions of the Software.
+#
+#THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+#SOFTWARE.
  
 #Exit Codes
 # 0= Success
