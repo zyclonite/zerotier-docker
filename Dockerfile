@@ -41,5 +41,5 @@ ENTRYPOINT ["entrypoint.sh"]
 
 CMD ["-U"]
 
-HEALTHCHECK --interval=60s --timeout=8s --retries=2 --start-period=60s --start-interval=3s \
+HEALTHCHECK --interval=60s --timeout=8s --retries=2 --start-period=60s \
   CMD ["/bin/sh", "/usr/sbin/healthcheck.sh"]

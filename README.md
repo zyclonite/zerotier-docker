@@ -46,13 +46,6 @@ To join a zerotier network you can use any of the following methods, or a combin
 
 	and then restart the container.
 
-You can also pass the following [Health Checking environment variables](#healthVars) to the `docker run` command:
-
-```
-  --env ZEROTIER_ONE_CHK_SPECIFIC_NETWORKS=«yourNetworkID(s)toCheck» \
-  --env ZEROTIER_ONE_CHK_MIN_ROUTES_FOR_HEALTH=1 \
-```
-
 #### compose file example
 
 ``` yaml
@@ -76,8 +69,6 @@ services:
       - PUID=999
       - PGID=994
     # - ZEROTIER_ONE_NETWORK_IDS=«yourDefaultNetworkID(s)»
-    # - ZEROTIER_ONE_CHK_SPECIFIC_NETWORKS=«yourNetworkID(s)toCheck»
-    # - ZEROTIER_ONE_CHK_MIN_ROUTES_FOR_HEALTH=1
 ``` 
 
 #### Environment variables
@@ -128,7 +119,7 @@ services:
 		- ZEROTIER_ONE_NETWORK_IDS=aaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbb
 		```
 
-		This is the equivalent of running the following commands after the container first starts:
+		This is the equivalent of running the following commands after the container starts for the first time:
 
 		```
 		$ docker exec zerotier zerotier-cli join aaaaaaaaaaaaaaaa
@@ -137,45 +128,30 @@ services:
 
 	It does not matter whether you use this environment variable or the `join` command, you still need to use ZeroTier Central to approve the host for each network it joins.
 
-<a name="healthVars"></a>
-##### Health Checking variables
+<a name="healthCheck"></a>
+##### Health Checking
 
-The container (both client and router) runs a health-checking service. Two environment variables control its behaviour:
+The container (both client and router) runs a health-checking service. It works like this:
 
-* `ZEROTIER_ONE_CHK_SPECIFIC_NETWORKS` – a space-separated list of ZeroTier network IDs.
+1. The (internal) path:
 
-	If this variable is present, the health check returns "healthy" providing that all listed network IDs meet the following criteria:
+	```
+	/var/lib/zerotier-one/networks.d/
+	```
+	
+	contains zero or more files matching the pattern:
+	
+	```
+	«networkID».conf
+	```
+	
+	Each `.conf` file indicates a ZeroTier network which the container has been configured to join. The *count* of those files (which may be zero or more) is the "expected network count".
 
-	- the network ID is known to the ZeroTier One client running in the container **and** has the status of "OK". It is the equivalent of running:
+2. If the host's routing table does not contain the same number of direct routes to ZeroTier-associated interfaces as the *expected network count,* the container reports "unhealthy".
 
-		``` console
-		$ docker exec zerotier zerotier-cli get aaaaaaaaaaaaaaaa status
-		OK
-		```
+A container state of "unhealthy" only tells you that *something* is wrong. It does not tell you *what* is wrong. It is simply a hints to dig deeper.
 
-	- If the network is known and "OK", the host's routing table is also checked for the presence of at least one direct route to the associated network interface.
-
-	This variable takes precedence over checking for a minimum number of routes, which is described next.
-
-* `ZEROTIER_ONE_CHK_MIN_ROUTES_FOR_HEALTH` - an unsigned numeric value greater than zero. Defaults to 1.
-
-	This variable is only active if the check for specific networks (described above) is omitted.
-
-	This form of health check returns "healthy" providing that the host's routing table contains at least as many direct routes to ZeroTier-associated interfaces as are specified by this variable.
-
-	If your container joins exactly one ZeroTier Network then the default value of 1 is appropriate.
-
-	If your container joins more than one network then whether you should increase the value of this variable to match depends on considerations such as:
-
-	- whether multiple networks represent alternate paths; or
-	- whether *you* still regard the service as healthy if only a subset of networks remain viable.
-
-###### First Launch considerations
-
-In a first-launch situation where the container's persistent store is initialised from scratch:
-
-1. The container will report "unhealthy" until at least one ZeroTier network has been joined **and** the host has been approved in ZeroTier Central.
-2. If health-checking is configured to check for specific networks then the container will report "unhealthy" until **all** specified networks have been joined **and** the host has been approved to join **each** network in ZeroTier Central.
+One of the most common reasons for the container to report "unhealthy" is that you have instructed the ZeroTier client (running inside the container) to join a network for which it is not authorised. 
 
 ###### Why Health Checking checks routes
 
@@ -183,9 +159,9 @@ The `zerotier-cli` command running inside the container may report that a ZeroTi
 
 An entry in the host's routing table is a pinnacle artefact. A direct route to an interface will only be added to the host's routing table if the interface exists and is in a functioning state.
 
-Typically, each fully-functioning ZeroTier network that a client joins results in exactly one network interface and, therefore, exactly one direct route to that interface in the host's routing table.
+Each fully-functioning ZeroTier network that a client joins results in exactly one network interface and, therefore, exactly one direct route to that interface in the host's routing table.
 
-Route insertion and withdrawal is both sensitive to network conditions and efficient so using routes to confirm `zerotier-cli` status reports leads to fewer Type I (the container reporting "healthy" when it is not) and Type II (the container reporting "unhealthy" when it is not) errors. 
+Route insertion and withdrawal is both sensitive to network conditions and efficient so counting routes leads to fewer Type I (the container reporting "healthy" when it is not) and Type II (the container reporting "unhealthy" when it is not) errors. 
 
 #### Router mode
 

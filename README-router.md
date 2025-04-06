@@ -86,8 +86,6 @@ services:
       - ZEROTIER_ONE_USE_IPTABLES_NFT=false
       - ZEROTIER_ONE_GATEWAY_MODE=inbound
     # - ZEROTIER_ONE_NETWORK_IDS=«yourDefaultNetworkID(s)»
-    # - ZEROTIER_ONE_CHK_SPECIFIC_NETWORKS=«yourNetworkID(s)toCheck»
-    # - ZEROTIER_ONE_CHK_MIN_ROUTES_FOR_HEALTH=1
 ```
 
 Note:
