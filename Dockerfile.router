@@ -11,7 +11,7 @@ LABEL org.opencontainers.image.title="zerotier" \
 
 ENV LOG_PATH=/var/log/supervisor
 
-COPY scripts/entrypoint-router.sh /usr/sbin/
+COPY scripts/entrypoint-router.sh scripts/gatewaymode /usr/sbin/
 
 RUN apk add --no-cache --purge --clean-protected iptables iptables-legacy tzdata \
   && rm -rf /var/cache/apk/*
