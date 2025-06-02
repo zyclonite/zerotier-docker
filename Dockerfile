@@ -3,7 +3,7 @@ ARG ALPINE_VERSION=3.22
 ARG ZT_COMMIT=185a3a2c76e6bf1b1c0415871f43076638eb007c
 ARG ZT_VERSION=1.14.2
 
-FROM ${ALPINE_IMAGE}:${ALPINE_VERSION} as builder
+FROM ${ALPINE_IMAGE}:${ALPINE_VERSION} AS builder
 
 ARG ZT_COMMIT
 
@@ -27,9 +27,9 @@ LABEL org.opencontainers.image.title="zerotier" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.source="https://github.com/zyclonite/zerotier-docker"
 
-COPY --from=builder /src/zerotier-one /scripts/entrypoint.sh /usr/sbin/
+COPY --from=builder /src/zerotier-one /scripts/entrypoint.sh /scripts/healthcheck.sh /usr/sbin/
 
-RUN apk add --no-cache --purge --clean-protected libc6-compat libstdc++ \
+RUN apk add --no-cache --purge --clean-protected libc6-compat libstdc++ tzdata \
   && mkdir -p /var/lib/zerotier-one \
   && ln -s /usr/sbin/zerotier-one /usr/sbin/zerotier-idtool \
   && ln -s /usr/sbin/zerotier-one /usr/sbin/zerotier-cli \
@@ -40,3 +40,6 @@ EXPOSE 9993/udp
 ENTRYPOINT ["entrypoint.sh"]
 
 CMD ["-U"]
+
+HEALTHCHECK --interval=60s --timeout=8s --retries=2 --start-period=60s \
+  CMD ["/bin/sh", "/usr/sbin/healthcheck.sh"]
