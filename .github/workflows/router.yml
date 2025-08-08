@@ -20,20 +20,20 @@ env:
 jobs:
   build:
     name: Build images
-    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
         platform: [
-          {name: "linux/amd64", tag: "amd64"},
-          {name: "linux/386", tag: "i386"},
-          {name: "linux/arm64/v8", tag: "arm64v8"},
-          {name: "linux/arm/v7", tag: "arm32v7"},
-          {name: "linux/arm/v6", tag: "arm32v6"},
-          {name: "linux/riscv64", tag: "riscv64"},
-          {name: "linux/ppc64le", tag: "ppc64le"},
-          {name: "linux/s390x", tag: "s390x"}
+          {name: "linux/amd64", tag: "amd64", runner: "ubuntu-24.04"},
+          {name: "linux/386", tag: "i386", runner: "ubuntu-24.04"},
+          {name: "linux/arm64/v8", tag: "arm64v8", runner: "ubuntu-24.04-arm"},
+          {name: "linux/arm/v7", tag: "arm32v7", runner: "ubuntu-24.04-arm"},
+          {name: "linux/arm/v6", tag: "arm32v6", runner: "ubuntu-24.04-arm"},
+          {name: "linux/riscv64", tag: "riscv64", runner: "ubuntu-24.04"},
+          {name: "linux/ppc64le", tag: "ppc64le", runner: "ubuntu-24.04"},
+          {name: "linux/s390x", tag: "s390x", runner: "ubuntu-24.04"}
         ]
+    runs-on: ${{ matrix.platform.runner }}
     steps:
       - name: Checkout zerotier-docker
         uses: actions/checkout@v4
