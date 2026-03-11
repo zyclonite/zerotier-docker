@@ -36,7 +36,7 @@ jobs:
     runs-on: ${{ matrix.platform.runner }}
     steps:
       - name: Checkout zerotier-docker
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install qemu dependency
         run: |
@@ -61,7 +61,7 @@ jobs:
         run: podman save -o /tmp/image.tar ${{ env.IMAGE_NAME }}:${{ matrix.platform.tag }}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: image-${{ matrix.platform.tag }}-router
           path: /tmp/image.tar
@@ -73,7 +73,7 @@ jobs:
     environment: production
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
 
       - name: Import images
         run: |
