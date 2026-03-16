@@ -1,4 +1,5 @@
-version: '3'
+---
+
 services:
   zerotier:
     image: zyclonite/zerotier
@@ -11,3 +12,11 @@ services:
     cap_add:
       - NET_ADMIN
       - SYS_ADMIN
+    restart: unless-stopped
+    environment:
+      - TZ=Etc/UTC
+      - PUID=999
+      - PGID=994
+    # - ZEROTIER_ONE_NETWORK_IDS=«yourDefaultNetworkID(s)»
+    # - ZEROTIER_ONE_CHK_SPECIFIC_NETWORKS=«yourNetworkID(s)toCheck»
+    # - ZEROTIER_ONE_CHK_MIN_ROUTES_FOR_HEALTH=1
