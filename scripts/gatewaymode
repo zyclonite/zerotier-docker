@@ -1,0 +1,175 @@
+#!/bin/sh
+
+# use an appropriate default for a local physical interface
+# (using eth0 maintains backwards compatibility)
+PHY_IFACES="${ZEROTIER_ONE_LOCAL_PHYS:-"eth0"}"
+
+# default to iptables (maintains backwards compatibility)
+IPTABLES_CMD=iptables-legacy
+# but support an override to use iptables-nft
+[ "${ZEROTIER_ONE_USE_IPTABLES_NFT}" = "true" ] && IPTABLES_CMD=iptables-nft
+
+# the wildcard for the local zerotier interface is
+ZT_IFACE="zt+"
+
+# function to add and remove the requisite rules
+# - $1 is either "I" (insert), "A" (add) or "D" (delete)
+# - $2 is requested mode
+_update_iptables() {
+  local action
+  case "${1}" in
+    "I" )
+      action="Inserting"
+    ;;
+    "A" )
+      action="Adding"
+    ;;
+    "D" )
+      action="Deleting"
+    ;;
+    esac
+
+  case "${2}" in
+    "inbound" )
+      echo "${action} ${IPTABLES_CMD} rules for inbound traffic (ZeroTier to local interfaces ${PHY_IFACES})"
+      for PHY_IFACE in ${PHY_IFACES} ; do
+        ${IPTABLES_CMD} -t nat -${1} POSTROUTING -o ${PHY_IFACE} -j MASQUERADE
+        ${IPTABLES_CMD} -${1} FORWARD -i ${PHY_IFACE} -o ${ZT_IFACE} -j DROP
+        ${IPTABLES_CMD} -${1} FORWARD -i ${PHY_IFACE} -o ${ZT_IFACE} -m state --state RELATED,ESTABLISHED -j ACCEPT
+        ${IPTABLES_CMD} -${1} FORWARD -i ${ZT_IFACE} -o ${PHY_IFACE} -j ACCEPT
+      done
+    ;;
+    "outbound" )
+      echo "${action} ${IPTABLES_CMD} rules for outbound traffic (local interfaces ${PHY_IFACES} to ZeroTier)"
+      ${IPTABLES_CMD} -t nat -${1} POSTROUTING -o ${ZT_IFACE} -j MASQUERADE
+      for PHY_IFACE in ${PHY_IFACES} ; do
+        ${IPTABLES_CMD} -${1} FORWARD -i ${ZT_IFACE} -o ${PHY_IFACE} -j DROP
+        ${IPTABLES_CMD} -${1} FORWARD -i ${ZT_IFACE} -o ${PHY_IFACE} -m state --state RELATED,ESTABLISHED -j ACCEPT
+        ${IPTABLES_CMD} -${1} FORWARD -i ${PHY_IFACE} -o ${ZT_IFACE} -j ACCEPT
+      done
+    ;;
+    "both" )
+      echo "${action} ${IPTABLES_CMD} rules for bi-directional traffic (local interfaces ${PHY_IFACES} to/from ZeroTier)"
+      ${IPTABLES_CMD} -t nat -${1} POSTROUTING -o ${ZT_IFACE} -j MASQUERADE
+      for PHY_IFACE in ${PHY_IFACES} ; do
+        ${IPTABLES_CMD} -t nat -${1} POSTROUTING -o ${PHY_IFACE} -j MASQUERADE
+        ${IPTABLES_CMD} -${1} FORWARD -i ${ZT_IFACE} -o ${PHY_IFACE} -j ACCEPT
+        ${IPTABLES_CMD} -${1} FORWARD -i ${PHY_IFACE} -o ${ZT_IFACE} -j ACCEPT
+      done
+    ;;
+    "none" )
+      echo "${action} ${IPTABLES_CMD} rules for _no_ traffic (local interfaces ${PHY_IFACES} to/from ZeroTier)"
+      for PHY_IFACE in ${PHY_IFACES} ; do
+        ${IPTABLES_CMD} -${1} FORWARD -i ${ZT_IFACE} -o ${PHY_IFACE} -j DROP
+        ${IPTABLES_CMD} -${1} FORWARD -i ${PHY_IFACE} -o ${ZT_IFACE} -j DROP
+      done
+  esac
+}
+
+# Get current gateway mode by looking up what iptable rules are in place
+_get_current_mode() {
+
+  if [ -n "$( ${IPTABLES_CMD} -S -t nat 2> /dev/null | grep "\-o ${ZT_IFACE}" )" ]; then
+    #either outbound or both
+    if [ -n "$( ${IPTABLES_CMD} -S | grep "\-i ${ZT_IFACE}.*RELATED" )" ]; then
+      echo "outbound"
+    else
+      echo "both"
+    fi
+  elif [ -n "$( ${IPTABLES_CMD} -S | grep "\-i ${ZT_IFACE}.*ACCEPT" )" ]; then
+    echo "inbound"
+  elif [ -n "$( ${IPTABLES_CMD} -S | grep "\-i ${ZT_IFACE}.*DROP" )" ]; then
+    echo "none"
+  else
+    echo "disabled"
+  fi
+}
+
+
+_usage() {
+  echo "Usage: $0 [inbound | outbound | both | none | disable | status]"
+  echo "Set, query or disable gateway mode."
+  echo ""
+  echo "Command:"
+  echo " inbound     Only permit traffic from the ZeroTier cloud to the local physical interfaces."
+  echo " outbound    Only permit traffic from the local physical interfaces to the ZeroTier cloud."
+  echo " both        Permit bi-directional traffic between the local physical interfaces and the ZeroTier cloud."
+  echo " none        Block all traffic between the local physical interfaces and the ZeroTier cloud."
+  echo " disable     Remove iptable rules. NOTE: because default forward rule is accept, this behaves like \"both\"."
+  echo " status      Show current gateway mode (e.g. inbound, outbound, etc). Default if no command specified."
+  echo ""
+  exit $1
+}
+
+main() {
+  local i
+
+  local opt
+  local mode=$( _get_current_mode )
+  case "${1}" in
+    "inbound" )
+      if [ ${mode} == "inbound" ]; then
+        echo "Already in mode inbound."
+        break
+      fi
+      if [ ! ${mode} == "disabled" ]; then
+        _update_iptables D ${mode}
+      fi
+        _update_iptables I inbound
+    ;;
+    "outbound" )
+      if [ ${mode} == "outbound" ] ; then
+        echo "Already in mode outbound."
+        break
+      fi
+      if [ ! ${mode} == "disabled" ]; then
+        _update_iptables D ${mode}
+      fi
+        _update_iptables I outbound
+    ;;
+    "both" )
+      if [ ${mode} == "both" ]; then
+        echo "Already in mode both."
+        break
+      fi
+      if [ ! ${mode} == "disabled" ]; then
+        _update_iptables D ${mode}
+      fi
+        _update_iptables I both
+    ;;
+    "none" )
+      if [ ${mode} == "none" ]; then
+        echo "Already in mode none."
+        break
+      fi
+      if [ ! ${mode} == "disabled" ]; then
+        _update_iptables D ${mode}
+      fi
+        _update_iptables I none
+    ;;
+    "disable" )
+      if [ ${mode} == "disabled" ]; then
+        echo "Already disabled."
+        break
+      fi
+      if [ ! ${mode} == "disabled" ]; then
+        _update_iptables D ${mode}
+      fi
+    ;;
+    "status" )
+      echo ${mode}
+    ;;
+    "" )
+      echo ${mode}
+    ;;
+    * )
+      echo "Warning: Gateway mode (${1}) is not supported - ignored"
+      return 1
+    ;;
+  esac
+  return 0
+}
+
+main "${@}"
+exit ${?}
+
